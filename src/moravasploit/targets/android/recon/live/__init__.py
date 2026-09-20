@@ -1,13 +1,12 @@
 # Модул за динамичку анализу Android уређаја преко ADB-а.
-# За сада нема модула, само оквир менија.
 from rich.console import Console
-from rich.prompt import Prompt
+
+from moravasploit.core.menu import ask_choice
 
 console = Console()
 
-# Речник модула у live грани.
-# Касније ћемо овде додати праве модуле (adb_basic, ...).
-MODULES: dict[str, str] = {}
+# Речник модула у live грани. За сада празан.
+MODULES: dict[str, tuple[str, object]] = {}
 
 
 def menu() -> None:
@@ -15,20 +14,24 @@ def menu() -> None:
     while True:
         console.print("\n[bold]Android / recon / live - choose module:[/bold]\n")
 
-        # Приказујемо све доступне модуле.
-        for key, name in MODULES.items():
+        for key, (name, _) in MODULES.items():
             console.print(f"  [{key}] {name}")
 
-        # Ако нема модула, приказујемо поруку.
         if not MODULES:
             console.print("  [dim]No modules yet.[/dim]")
 
-        console.print("  [0] Back\n")
+        # Ако нема ниједан модул, не дозвољавамо избор,
+        # само приказујемо мени и тражимо back/exit.
+        if not MODULES:
+            choice = ask_choice([])
+            if choice is None:
+                return
+            continue
 
-        # Тражимо избор.
-        choices = list(MODULES.keys()) + ["0"]
-        choice = Prompt.ask(">", choices=choices, default="0")
+        choice = ask_choice(list(MODULES.keys()))
 
-        # Ако је изабрао повратак, излазимо.
-        if choice == "0":
+        if choice is None:
             return
+
+        _, run_function = MODULES[choice]
+        run_function()

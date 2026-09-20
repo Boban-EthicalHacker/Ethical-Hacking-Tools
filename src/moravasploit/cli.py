@@ -1,13 +1,17 @@
 # Увоз потребних библиотека и модула.
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Prompt
 
 # Увозимо број верзије из главног пакета.
 from moravasploit import __version__
 
+# Увозимо изузетак за потпуни излаз из апликације.
+from moravasploit.exceptions import ExitApp
+
+# Увозимо помоћну функцију за избор.
+from moravasploit.core.menu import ask_choice
+
 # Увозимо меније за све подржане системе.
-# Главни програм тако остаје кратак и не зна детаље ниједног менија.
 from moravasploit.targets.linux import menu as linux_menu
 from moravasploit.targets.android import menu as android_menu
 from moravasploit.targets.macos import menu as macos_menu
@@ -27,7 +31,6 @@ SYSTEMS = {
 }
 
 # Речник који повезује име система са његовом menu() функцијом.
-# Ово нам омогућава да избегнемо понављање истог кода за сваки систем.
 SYSTEM_MENUS = {
     "Linux": linux_menu,
     "macOS": macos_menu,
@@ -51,21 +54,29 @@ def show_welcome() -> None:
     console.print(Panel(text, border_style="cyan", title="MoravaSploit"))
 
 
-def choose_system() -> str | None:
-    """Приказује мени и враћа име изабраног система или None."""
+def choose_system() -> str:
+    """Приказује главни мени и враћа име изабраног система.
+
+    Подиже ExitApp ако корисник укуца 'exit'.
+    """
     console.print("\n[bold]Choose target system:[/bold]\n")
+
+    # Приказујемо све системе.
     for key, name in SYSTEMS.items():
         console.print(f"  [{key}] {name}")
-    console.print("  [0] Exit\n")
 
-    choice = Prompt.ask(
-        ">",
-        choices=list(SYSTEMS.keys()) + ["0"],
-        default="0",
-    )
+    # Опција за излаз. Двострука обратна коса црта спречава
+    # rich да interpreтира [exit] као markup таг.
+    console.print("  \\[exit] Exit\n")
 
-    if choice == "0":
-        return None
+    # Питамо корисника за избор помоћу заједничке функције.
+    choice = ask_choice(list(SYSTEMS.keys()))
+
+    # Ако је враћено None, то значи 'back' — али у главном менију
+    # 'back' нема смисла, па га третирамо као поновни приказ менија.
+    if choice is None:
+        return choose_system()
+
     return SYSTEMS[choice]
 
 
@@ -74,32 +85,25 @@ def main() -> None:
     # Прво приказујемо уводну поруку.
     show_welcome()
 
-    # Главна петља програма. Врти се све док корисник не изабере излаз.
-    while True:
-        # Тражимо од корисника да изабере систем.
-        system = choose_system()
+    try:
+        # Главна петља програма. Врти се све док корисник не укуца 'exit'.
+        while True:
+            # Бирамо систем.
+            system = choose_system()
 
-        # Ако је изабрао 0 на главном менију, излазимо из програма.
-        if system is None:
-            console.print("\n[dim]Goodbye.[/dim]")
-            return
+            # Исписујемо поруку добродошлице за изабрани систем.
+            console.print(
+                f"\n[bold green]Welcome to security study of "
+                f"{system} systems.[/bold green]"
+            )
 
-        # Исписујемо поруку добродошлице за изабрани систем.
-        console.print(
-            f"\n[bold green]Welcome to security study of "
-            f"{system} systems.[/bold green]"
-        )
+            # Проналазимо одговарајућу menu() функцију за изабрани систем.
+            menu_function = SYSTEM_MENUS.get(system)
 
-        # Проналазимо одговарајућу menu() функцију за изабрани систем.
-        menu_function = SYSTEM_MENUS.get(system)
+            # Приказујемо мени категорија за изабрани систем.
+            menu_function()
 
-        # Приказујемо мени категорија за изабрани систем.
-        category = menu_function()
-
-        # Ако је корисник изабрао назад, враћамо се на избор система.
-        if category is None:
-            continue
-
-        # За сада само исписујемо шта је изабрано.
-        # У следећем кораку ћемо ово повезати са правим модулима.
-        console.print(f"\n[bold green]You chose: {category}[/bold green]\n")
+    except ExitApp:
+        # Хватамо сигнал за излаз и исписујемо поздрав.
+        console.print("\n[dim]Goodbye.[/dim]")
+        return

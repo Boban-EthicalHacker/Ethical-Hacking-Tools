@@ -1,7 +1,9 @@
 # Модул за Android систем.
 # Садржи мени категорија за Android.
 from rich.console import Console
-from rich.prompt import Prompt
+
+# Увозимо помоћну функцију за избор.
+from moravasploit.core.menu import ask_choice
 
 # Увозимо подмени за recon категорију.
 from moravasploit.targets.android.recon import menu as recon_menu
@@ -18,7 +20,6 @@ CATEGORIES = {
 }
 
 # Речник који повезује категорију са њеном menu() функцијом.
-# За сада само recon има подмени. Остале категорије су празне.
 CATEGORY_MENUS = {
     "recon": recon_menu,
 }
@@ -26,41 +27,25 @@ CATEGORY_MENUS = {
 
 def menu() -> None:
     """Приказује мени категорија за Android."""
-    # Петља која омогућава повратак на овај мени.
     while True:
-        # Исписујемо наслов менија.
         console.print("\n[bold]Android - choose category:[/bold]\n")
 
-        # Приказујемо све категорије.
         for key, name in CATEGORIES.items():
             console.print(f"  [{key}] {name}")
 
-        # Опција за повратак.
-        console.print("  [0] Back\n")
+        # Питамо корисника. 'back' и 'exit' су аутоматски доступни.
+        choice = ask_choice(list(CATEGORIES.keys()))
 
-        # Тражимо избор.
-        choice = Prompt.ask(
-            ">",
-            choices=list(CATEGORIES.keys()) + ["0"],
-            default="0",
-        )
-
-        # Ако је изабрао повратак, излазимо из петље.
-        if choice == "0":
+        # Ако је изабрао 'back', враћамо се на главни мени.
+        if choice is None:
             return
 
-        # Узимамо име изабране категорије.
         category = CATEGORIES[choice]
-
-        # Ако категорија има подмени, приказујемо га.
         submenu = CATEGORY_MENUS.get(category)
 
         if submenu is not None:
             submenu()
-            # Након повратка из подменија, петља се наставља
-            # и поново приказује овај мени.
         else:
-            # За категорије без подменија, само исписујемо поруку.
             console.print(
                 f"\n[bold green]You chose: {category}[/bold green]\n"
             )
