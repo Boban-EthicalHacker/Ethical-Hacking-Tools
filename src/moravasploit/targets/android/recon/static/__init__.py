@@ -2,7 +2,11 @@
 from rich.console import Console
 
 from moravasploit.core.menu import ask_choice
-from moravasploit.targets.android.recon.static import apk_info, permissions
+from moravasploit.targets.android.recon.static import (
+    apk_info,
+    exported,
+    permissions,
+)
 
 console = Console()
 
@@ -10,6 +14,7 @@ console = Console()
 MODULES: dict[str, tuple[str, object]] = {
     "1": ("apk_info", apk_info.run),
     "2": ("permissions", permissions.run),
+    "3": ("exported", exported.run),
 }
 
 
