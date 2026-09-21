@@ -7,6 +7,7 @@ from moravasploit.targets.android.recon.static import (
     certificate,
     dangerous_permissions,
     exported,
+    manifest_dump,
     network_config,
     permissions,
     strings_scan,
@@ -23,6 +24,7 @@ MODULES: dict[str, tuple[str, object]] = {
     "5": ("network_config", network_config.run),
     "6": ("dangerous_permissions", dangerous_permissions.run),
     "7": ("strings_scan", strings_scan.run),
+    "8": ("manifest_dump", manifest_dump.run),
 }
 
 
