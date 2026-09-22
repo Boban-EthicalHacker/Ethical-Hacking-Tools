@@ -1,7 +1,12 @@
 # Модул за iOS систем.
 # Садржи мени категорија за iOS.
 from rich.console import Console
-from rich.prompt import Prompt
+
+# Увозимо помоћну функцију за избор.
+from moravasploit.core.menu import ask_choice
+
+# Увозимо подмени за recon категорију.
+from moravasploit.targets.ios.recon import menu as recon_menu
 
 # Глобални објекат конзоле за испис у терминалу.
 console = Console()
@@ -14,29 +19,34 @@ CATEGORIES = {
     "4": "payloads",
 }
 
+# Речник који повезује категорију са њеном menu() функцијом.
+# За сада само recon има подмени. Остале категорије су празне.
+CATEGORY_MENUS = {
+    "recon": recon_menu,
+}
 
-def menu() -> str | None:
-    """Приказује мени категорија за iOS и враћа избор."""
-    # Исписујемо наслов менија.
-    console.print("\n[bold]iOS - choose category:[/bold]\n")
 
-    # Приказујемо све категорије.
-    for key, name in CATEGORIES.items():
-        console.print(f"  [{key}] {name}")
+def menu() -> None:
+    """Приказује мени категорија за iOS."""
+    while True:
+        console.print("\n[bold]iOS - choose category:[/bold]\n")
 
-    # Опција за повратак.
-    console.print("  [0] Back\n")
+        for key, name in CATEGORIES.items():
+            console.print(f"  [{key}] {name}")
 
-    # Тражимо избор.
-    choice = Prompt.ask(
-        ">",
-        choices=list(CATEGORIES.keys()) + ["0"],
-        default="0",
-    )
+        # Питамо корисника. 'back' и 'exit' су аутоматски доступни.
+        choice = ask_choice(list(CATEGORIES.keys()))
 
-    # Ако је изабрао повратак, враћамо None.
-    if choice == "0":
-        return None
+        # Ако је изабрао 'back', враћамо се на главни мени.
+        if choice is None:
+            return
 
-    # Иначе враћамо име категорије.
-    return CATEGORIES[choice]
+        category = CATEGORIES[choice]
+        submenu = CATEGORY_MENUS.get(category)
+
+        if submenu is not None:
+            submenu()
+        else:
+            console.print(
+                f"\n[bold green]You chose: {category}[/bold green]\n"
+            )

@@ -7,15 +7,19 @@
 
 ### recon
 
-- **static** — завршено
+- **static** — завршено, 12 модула
   - apk_info — основне информације из APK фајла
   - permissions — све дозволе које апликација тражи
-  - exported — извезене компоненте (експлицитне и имплицитне)
-  - certificate — сертификат апликације (subject, issuer, отисци)
+  - exported — извезене компоненте
+  - certificate — сертификат апликације
   - network_config — мрежна безбедносна конфигурација
-  - dangerous_permissions — опасне дозволе са упозорењем
-  - strings_scan — претрага URL-ова, IP адреса, емаилова, API кључева
-  - manifest_dump — цео AndroidManifest.xml са синтаксним истицањем
+  - dangerous_permissions — опасне дозволе
+  - strings_scan — URL-ови, IP адресе, емаилови, API кључеви
+  - manifest_dump — цео AndroidManifest.xml
+  - native_libs — нативне библиотеке (.so)
+  - assets_scan — фајлови у assets/ фолдеру
+  - sdk_info — SDK верзије са безбедносним упозорењима
+  - resources_dump — стринг ресурси из resources.arsc
   - _loader.py — заједничка функција за учитавање APK-а
 
 - **live** — празно
@@ -39,16 +43,18 @@
 - `exceptions.py` — ExitApp изузетак за излаз из апликације
 - Менији имају `back` и `exit` у свим нивоима
 
-## Следеће на реду
+## Могућности следећег корака
 
-Android static (још могуће):
-- native_libs — листа .so нативних библиотека
-- assets_scan — преглед assets/ фолдера (конфизи, базе, кључеви)
-- sdk_info — детаљне информације о SDK верзијама
+Android static — могућа проширења:
+- dex_info — информације о DEX фајловима (број класа, метода)
+- apk_hash — MD5/SHA отисци самог APK фајла
+- trackers — препознавање познатих analytics/tracking библиотека
 
-Android live (тек почети):
+Android live — тек почети:
 - adb_basic — основа за рад са уређајем
 - adb_devices — листа повезаних уређаја
+- adb_apps — листа инсталираних апликација
+- adb_logcat — праћење логова
 
 ## Остали системи
 
@@ -56,27 +62,3 @@ Android live (тек почети):
 - macOS — само мени категорија, без модула
 - Windows — само мени категорија, без модула
 - iOS — само мени категорија, без модула
-
-## Структура Android фолдера
-
-android/
-├── NOTES.md
-├── init.py
-├── recon/
-│ ├── init.py
-│ ├── static/
-│ │ ├── init.py
-│ │ ├── _loader.py
-│ │ ├── apk_info.py
-│ │ ├── permissions.py
-│ │ ├── exported.py
-│ │ ├── certificate.py
-│ │ ├── network_config.py
-│ │ ├── dangerous_permissions.py
-│ │ ├── strings_scan.py
-│ │ └── manifest_dump.py
-│ └── live/
-│ └── init.py
-├── exploits/
-├── post/
-└── payloads/
