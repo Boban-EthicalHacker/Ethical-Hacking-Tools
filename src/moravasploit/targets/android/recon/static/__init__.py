@@ -12,6 +12,8 @@ from moravasploit.targets.android.recon.static import (
     native_libs,
     network_config,
     permissions,
+    resources_dump,
+    sdk_info,
     strings_scan,
 )
 
@@ -29,6 +31,8 @@ MODULES: dict[str, tuple[str, object]] = {
     "8": ("manifest_dump", manifest_dump.run),
     "9": ("native_libs", native_libs.run),
     "10": ("assets_scan", assets_scan.run),
+    "11": ("sdk_info", sdk_info.run),
+    "12": ("resources_dump", resources_dump.run),
 }
 
 
