@@ -4,10 +4,12 @@ from rich.console import Console
 from moravasploit.core.menu import ask_choice
 from moravasploit.targets.android.recon.static import (
     apk_info,
+    assets_scan,
     certificate,
     dangerous_permissions,
     exported,
     manifest_dump,
+    native_libs,
     network_config,
     permissions,
     strings_scan,
@@ -25,6 +27,8 @@ MODULES: dict[str, tuple[str, object]] = {
     "6": ("dangerous_permissions", dangerous_permissions.run),
     "7": ("strings_scan", strings_scan.run),
     "8": ("manifest_dump", manifest_dump.run),
+    "9": ("native_libs", native_libs.run),
+    "10": ("assets_scan", assets_scan.run),
 }
 
 
