@@ -5,7 +5,7 @@ from rich.console import Console
 from moravasploit.core.menu import ask_select
 
 # Увозимо модуле.
-from moravasploit.targets.linux.recon import system_info
+from moravasploit.targets.linux.recon import system_info, users_groups
 
 # Глобални објекат конзоле за испис у терминалу.
 console = Console()
@@ -14,6 +14,7 @@ console = Console()
 # Кључ је интерно име, вредност је (опис, funkcija).
 MODULES: dict[str, tuple[str, object]] = {
     "system_info": ("System information", system_info.run),
+    "users_groups": ("Users and groups", users_groups.run),
 }
 
 
