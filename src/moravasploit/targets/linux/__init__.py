@@ -1,48 +1,53 @@
 # Модул за Linux систем.
-# Садржи мени категорија и, касније, логику за избор модула.
+# Садржи мени категорија за Linux.
 from rich.console import Console
-from rich.prompt import Prompt
+
+# Увозимо помоћну функцију за избор са стрелицама.
+from moravasploit.core.menu import ask_select
+
+# Увозимо подмени за recon категорију.
+from moravasploit.targets.linux.recon import menu as recon_menu
 
 # Глобални објекат конзоле за испис у терминалу.
 console = Console()
 
 # Речник категорија модула за Linux.
-# Свака категорија одговара подфолдеру у targets/linux/.
 CATEGORIES = {
-    "1": "recon",
-    "2": "exploits",
-    "3": "post",
-    "4": "payloads",
+    "recon": "Reconnaissance",
+    "exploits": "Exploits",
+    "post": "Post-exploitation",
+    "payloads": "Payloads",
+}
+
+# Речник који повезује категорију са њеном menu() функцијом.
+CATEGORY_MENUS = {
+    "recon": recon_menu,
 }
 
 
-def menu() -> str | None:
-    """Приказује мени категорија за Linux и враћа избор.
+def menu() -> None:
+    """Приказује мени категорија за Linux."""
+    while True:
+        console.print("\n[bold]Linux - choose category:[/bold]\n")
 
-    Враћа:
-        Име изабране категорије или None ако је корисник изабрао повратак.
-    """
-    # Исписујемо наслов менија.
-    console.print("\n[bold]Linux - choose category:[/bold]\n")
+        # Припремамо листу (кључ, опис) за ask_select.
+        options = [
+            (key, name) for key, name in CATEGORIES.items()
+        ]
 
-    # Пролазимо кроз све категорије и исписујемо их са редним бројем.
-    for key, name in CATEGORIES.items():
-        console.print(f"  [{key}] {name}")
+        # Питамо корисника. 'back' и 'exit' су аутоматски додати.
+        choice = ask_select(options)
 
-    # Додајемо опцију за повратак на избор система.
-    console.print("  [0] Back\n")
+        # Ако је изабрао 'back', враћамо се на главни мени.
+        if choice is None:
+            return
 
-    # Тражимо избор од корисника.
-    # Дозвољени уноси су 1-4 и 0.
-    choice = Prompt.ask(
-        ">",
-        choices=list(CATEGORIES.keys()) + ["0"],
-        default="0",
-    )
+        # Проналазимо подмени ако постоји.
+        submenu = CATEGORY_MENUS.get(choice)
 
-    # Ако је изабрао 0, враћамо None.
-    if choice == "0":
-        return None
-
-    # Иначе враћамо име категорије.
-    return CATEGORIES[choice]
+        if submenu is not None:
+            submenu()
+        else:
+            console.print(
+                f"\n[bold green]You chose: {choice}[/bold green]\n"
+            )
