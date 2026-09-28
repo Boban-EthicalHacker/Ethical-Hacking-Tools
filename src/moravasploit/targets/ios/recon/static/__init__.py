@@ -2,7 +2,13 @@
 from rich.console import Console
 
 from moravasploit.core.menu import ask_choice
-from moravasploit.targets.ios.recon.static import binary_info, ipa_info
+from moravasploit.targets.ios.recon.static import (
+    binary_info,
+    files_list,
+    ipa_info,
+    plist_full,
+    strings_scan,
+)
 
 console = Console()
 
@@ -10,6 +16,9 @@ console = Console()
 MODULES: dict[str, tuple[str, object]] = {
     "1": ("ipa_info", ipa_info.run),
     "2": ("binary_info", binary_info.run),
+    "3": ("files_list", files_list.run),
+    "4": ("plist_full", plist_full.run),
+    "5": ("strings_scan", strings_scan.run),
 }
 
 

@@ -7,9 +7,15 @@
 
 ### recon
 
-- **static** — у току, 1 модул
+- **static** — у току, 5 модула
   - ipa_info — основне информације из Info.plist
     (bundle ID, верзија, минимални iOS, дозволе)
+  - binary_info — информације о Mach-O бинару
+    (архитектуре, тип, линковане библиотеке, шифровање)
+  - files_list — листа свих фајлова у .app фолдеру
+    груписаних по категоријама
+  - plist_full — цео Info.plist у XML облику са бојама
+  - strings_scan — URL-ови, IP адресе, емаилови, API кључеви
   - _loader.py — заједничка функција за учитавање IPA фајла
 
 - **live** — празно
@@ -33,28 +39,49 @@
 - `exceptions.py` — ExitApp изузетак за излаз из апликације
 - Менији имају `back` и `exit` у свим нивоима
 
+## Зависности
+
+- `lief>=1.0.0` — за читање Mach-O бинарних фајлова
+  (користи се у binary_info, касније и за Linux/Windows)
+- `plistlib` — стандардна Python библиотека за plist фајлове
+
 ## Шта је урађено у овом кораку
 
 - Направљена структура iOS фолдера
 - Направљен `_loader.py` који учитава IPA фајл (ZIP) и
   чита Info.plist (бинарни или XML)
-- Направљен први модул `ipa_info`
+- Направљено 5 модула у recon/static
 - Повезан iOS recon мени са static/live подменијем
 - Тестирано на CTFApp.ipa
+
+## Шта открива тестни узорак (CTFApp)
+
+- Bundle ID: com.iosctf.app
+- Минимални iOS: 16.0
+- Платформа: iphoneos26.2 (SDK из будуће верзије)
+- Архитектура: arm64
+- Бинар: шифрован (encrypted: yes)
+- 28 линкованих системских библиотека
+- URL-ови који указују на CTF изазове:
+  - http://localhost:8000
+  - https://api.internal.example.com
+  - https://server/redirect?url=...
+- IP: 127.0.0.1
 
 ## Следеће на реду
 
 iOS static — планирани модули:
-- binary_info — информације о Mach-O бинару
-  (архитектуре, тип, линковане библиотеке, шифровање)
-- files_list — листа свих фајлова у .app фолдеру
-- plist_full — цео Info.plist у читљивом облику
 - entitlements — системске дозволе (када буде доступан
   embedded.mobileprovision)
-- frameworks — листа уграђених framework-а
-- strings_scan — URL-ови, IP адресе, емаилови, API кључеви
+- frameworks — детаљна анализа .framework фолдера
 - ipa_hash — MD5/SHA отисци самог IPA фајла
 - cert_info — сертификат за потписивање
+- check_encryption — провера да ли је бинар стварно шифрован
+  (анализа __TEXT,__crypt секције)
+- asset_car — анализа Assets.car фајла
+
+iOS live — тек почети:
+- (чека планирање — могућности су ограничене на Linux-у)
 
 ## Остали системи
 
@@ -64,22 +91,3 @@ iOS static — планирани модули:
 - Android — 12 модула у recon/static (завршено)
 
 ## Структура iOS фолдера
-
-
-ios/
-├── NOTES.md
-├── init.py
-├── recon/
-│ ├── init.py
-│ ├── static/
-│ │ ├── init.py
-│ │ ├── _loader.py
-│ │ └── ipa_info.py
-│ └── live/
-│ └── init.py
-├── exploits/
-├── post/
-└── payloads/
-
-
-## Тестни узорак
