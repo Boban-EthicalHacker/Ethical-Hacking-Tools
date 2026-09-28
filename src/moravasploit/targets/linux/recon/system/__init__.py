@@ -3,12 +3,13 @@
 from rich.console import Console
 
 from moravasploit.core.menu import ask_select
-from moravasploit.targets.linux.recon.system import system_info
+from moravasploit.targets.linux.recon.system import kernel_info, system_info
 
 console = Console()
 
 MODULES: dict[str, tuple[str, object]] = {
     "system_info": ("System information", system_info.run),
+    "kernel_info": ("Kernel information", kernel_info.run),
 }
 
 

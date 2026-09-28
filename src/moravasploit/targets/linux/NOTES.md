@@ -5,17 +5,45 @@
 
 ## Тренутно стање
 
-### recon
+Linux recon је организован по **подкатегоријама** (слично
+као мобилне платформе, али другачије подељено — по темама).
 
-- **директно у recon/** — 2 модула
-  - system_info — основне информације о систему
-    (hostname, OS, kernel, архитектура, uptime, boot time)
-  - users_groups — корисници, групе, sudo права
-    (UID 0, интерактивни корисници, sudo конфигурација)
+### recon / system — 2 модула
 
-Напомена: Linux нема static/live поделу као Android/iOS.
-Анализа Linux система је увек "live" — чита се локални систем
-или преко SSH касније.
+- system_info — hostname, OS, kernel, архитектура, uptime
+- kernel_info — верзија кернела, boot параметри, модули, sysctl
+
+### recon / users — 1 модул
+
+- users_groups — корисници, групе, UID 0, sudo конфигурација
+
+### recon / filesystem — 1 модул
+
+- suid_sgid — фајлови са SUID/SGID битовима
+
+### recon / network — празно
+
+- (чека модуле)
+
+### recon / services — празно
+
+- (чека модуле)
+
+### recon / software — празно
+
+- (чека модуле)
+
+### recon / security — празно
+
+- (чека модуле)
+
+### recon / credentials — празно
+
+- (чека модуле)
+
+### recon / logs — празно
+
+- (чека модуле)
 
 ### exploits
 
@@ -29,42 +57,99 @@
 
 - празно
 
+## Укупно
+
+- **4 модула** у recon (system, users, filesystem)
+- **9 подкатегорија** у recon
+
 ## Инфраструктура (заједничка)
 
-- `core/menu.py` — две функције за меније:
+- `core/menu.py`:
   - `ask_choice()` — нумерички унос (стари стил)
   - `ask_select()` — стрелице горе/доле (нови стил)
-- `exceptions.py` — ExitApp изузетак за излаз
-- Linux менији користе `ask_select()` са стрелицама
-- Кратки тастери: `b` = back, `e` = exit
+- `exceptions.py` — ExitApp изузетак
+- Кратки тастери у менијима: `b` = back, `e` = exit
+- Linux користи `ask_select()` свуда
 
-## Зависности
+## Зависности (у pyproject.toml)
 
-- `questionary>=2.1.1` — за меније са стрелицама
-- `rich>=13.7` — за леп приказ
-- `lief>=1.0.0` — за бинарне формате (jош се не користи у Linux)
-- `pyaxmlparser>=0.3.31` — за Android (не користи се у Linux)
-
-## Шта је урађено у овом кораку
-
-- Преправљен Linux мени да користи `ask_select()` (стрелице)
-- Додата `ask_select()` функција у `core/menu.py`
-- Додат `questionary` као зависност
-- Направљена два модула у recon
+- `rich>=13.7` — леп приказ
+- `questionary>=2.1.1` — менији са стрелицама
+- `pyaxmlparser>=0.3.31` — за Android
+- `lief>=1.0.0` — за бинарне формате (iOS, касније Linux)
 
 ## Следеће на реду
 
-Linux recon — планирани модули:
-- suid_sgid — фајлови са SUID/SGID битовима (privilege escalation)
-- services — активни сервиси и отворени портови
-- cron_jobs — заказани задаци
-- network_info — мрежне конфигурације, руте, DNS
-- ssh_config — SSH подешавања
+### Прво завршити system подкатегорију
+
+- hardware_info — CPU, RAM, дискови, GPU
+- boot_info — bootloader, init систем
+- environment — променљиве окружења
+
+### Затим остале подкатегорије (редом)
+
+**users:**
+- sudoers — детаљна sudo конфигурација
+- ssh_keys — authorized_keys фајлови
+- login_history — last, w, who
+- password_policy — /etc/login.defs
+- pam_config — PAM конфигурација
+
+**filesystem:**
+- capabilities — Linux capabilities на фајловима
 - world_writable — фајлови које сви могу мењати
-- package_audit — инсталирани пакети, верзије
-- kernel_modules — учитани модули кернела
-- history — историја команди корисника
-- capabilities — фајлови са Linux capabilities
+- hidden_files — скривене фасцикле
+- recent_files — недавно измењени
+- suspicious_files — фајлови на необичним местима
+
+**network:**
+- network_info — интерфејси, IP, руте
+- open_ports — отворени портови
+- listening_services — шта слуша
+- firewall_rules — iptables/nftables/ufw
+- dns_config — DNS подешавања
+- arp_table — ARP кеш
+
+**services:**
+- services — systemd сервиси
+- processes — активни процеси
+- cron_jobs — заказани задаци
+- timers — systemd timers
+- startup_scripts — скрипте при покретању
+- sockets — systemd sockets
+
+**software:**
+- installed_packages — инсталирани пакети
+- outdated_packages — застарели
+- kernel_modules — учитани модули (део у kernel_info већ)
+- docker — Docker контејнери
+- compilers — инсталирани компајлери
+
+**security:**
+- selinux_apparmor — SELinux/AppArmor статус
+- fail2ban — fail2ban конфигурација
+- audit_rules — audit правила
+- sysctl — детаљни sysctl
+- sshd_config — SSH сервер
+- tls_certs — TLS сертификати
+
+**credentials:**
+- ssh_private_keys — приватни SSH кључеви
+- history_files — историја команди
+- config_secrets — тајне у конфиг фајловима
+- env_secrets — тајне у environment
+- cloud_creds — AWS, GCP, Azure креденцијали
+
+**logs:**
+- auth_logs — /var/log/auth.log
+- system_logs — /var/log/syslog
+- journal — systemd journal
+- app_logs — логови апликација
+
+## Циљ
+
+Озбиљан Linux recon framework са ~50 модула у 9 подкатегорија.
+Након тога иду exploits (~15), post (~10), payloads (~5).
 
 ## Остали системи
 
@@ -80,8 +165,28 @@ linux/
 ├── init.py
 ├── recon/
 │ ├── init.py
-│ ├── system_info.py
-│ └── users_groups.py
+│ ├── system/
+│ │ ├── init.py
+│ │ ├── system_info.py
+│ │ └── kernel_info.py
+│ ├── users/
+│ │ ├── init.py
+│ │ └── users_groups.py
+│ ├── filesystem/
+│ │ ├── init.py
+│ │ └── suid_sgid.py
+│ ├── network/
+│ │ └── init.py
+│ ├── services/
+│ │ └── init.py
+│ ├── software/
+│ │ └── init.py
+│ ├── security/
+│ │ └── init.py
+│ ├── credentials/
+│ │ └── init.py
+│ └── logs/
+│ └── init.py
 ├── exploits/
 ├── post/
 └── payloads/
@@ -92,3 +197,7 @@ linux/
 - Kali GNU/Linux Rolling 2026.3
 - Kernel: 7.0.12+kali-amd64
 - Architecture: x86_64
+- ASLR: 2 (пуно)
+- kptr_restrict: 0 (упозорење — pointer-и нису скривени)
+- dmesg_restrict: 0 (упозорење — dmesg доступан свима)
+- yama/ptrace_scope: 0 (упозорење — ptrace није ограничен)
