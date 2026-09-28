@@ -7,15 +7,19 @@
 
 ### recon
 
-- **static** — у току, 5 модула
+- **static** — завршено, 12 модула (изједначено са Android-ом)
   - ipa_info — основне информације из Info.plist
-    (bundle ID, верзија, минимални iOS, дозволе)
   - binary_info — информације о Mach-O бинару
-    (архитектуре, тип, линковане библиотеке, шифровање)
-  - files_list — листа свих фајлова у .app фолдеру
-    груписаних по категоријама
-  - plist_full — цео Info.plist у XML облику са бојама
+  - files_list — листа фајлова у .app фолдеру
+  - plist_full — цео Info.plist у XML облику
   - strings_scan — URL-ови, IP адресе, емаилови, API кључеви
+  - ipa_hash — MD5, SHA-1, SHA-256 отисци
+  - check_encryption — провера стварне шифрованости бинара
+  - frameworks — анализа .framework фолдера
+  - entitlements — системске дозволе из mobileprovision
+  - asset_car — анализа Assets.car (компајлирани ресурси)
+  - ats_check — App Transport Security провера
+  - localization — језици и .lproj фолдери
   - _loader.py — заједничка функција за учитавање IPA фајла
 
 - **live** — празно
@@ -41,47 +45,38 @@
 
 ## Зависности
 
-- `lief>=1.0.0` — за читање Mach-O бинарних фајлова
-  (користи се у binary_info, касније и за Linux/Windows)
-- `plistlib` — стандардна Python библиотека за plist фајлове
+- `lief>=1.0.0` — Mach-O, ELF, PE бинарни формати
+- `plistlib` — стандардна Python библиотека за plist
+- `struct`, `hashlib`, `zipfile` — стандардне библиотеке
 
 ## Шта је урађено у овом кораку
 
 - Направљена структура iOS фолдера
-- Направљен `_loader.py` који учитава IPA фајл (ZIP) и
-  чита Info.plist (бинарни или XML)
-- Направљено 5 модула у recon/static
-- Повезан iOS recon мени са static/live подменијем
+- Направљен `_loader.py` за IPA фајлове
+- Направљено 12 модула у recon/static
 - Тестирано на CTFApp.ipa
 
 ## Шта открива тестни узорак (CTFApp)
 
 - Bundle ID: com.iosctf.app
 - Минимални iOS: 16.0
-- Платформа: iphoneos26.2 (SDK из будуће верзије)
-- Архитектура: arm64
-- Бинар: шифрован (encrypted: yes)
+- Архитектура: arm64, бинар није стварно шифрован
 - 28 линкованих системских библиотека
-- URL-ови који указују на CTF изазове:
-  - http://localhost:8000
-  - https://api.internal.example.com
-  - https://server/redirect?url=...
-- IP: 127.0.0.1
+- URL-ови ка CTF изазовима
+- Assets.car у BOMS формату (новији)
+- Нема frameworks, entitlements, ни локализација
 
-## Следеће на реду
+## Следеће на реду (опционо)
 
-iOS static — планирани модули:
-- entitlements — системске дозволе (када буде доступан
-  embedded.mobileprovision)
-- frameworks — детаљна анализа .framework фолдера
-- ipa_hash — MD5/SHA отисци самог IPA фајла
-- cert_info — сертификат за потписивање
-- check_encryption — провера да ли је бинар стварно шифрован
-  (анализа __TEXT,__crypt секције)
-- asset_car — анализа Assets.car фајла
+iOS static — могућа проширења:
+- app_extensions — анализа .appex фолдера (widgets, extensions)
+- ipa_compare — поређење два IPA фајла
+- car_extract — екстракција слика из Assets.car
+  (захтева спољне алате или дубљи парсер)
 
 iOS live — тек почети:
-- (чека планирање — могућности су ограничене на Linux-у)
+- Ограничене могућности на Linux-у
+- Захтева macOS или специјализоване алате
 
 ## Остали системи
 
@@ -89,5 +84,6 @@ iOS live — тек почети:
 - macOS — само мени категорија, без модула
 - Windows — само мени категорија, без модула
 - Android — 12 модула у recon/static (завршено)
+- iOS — 12 модула у recon/static (завршено)
 
 ## Структура iOS фолдера
