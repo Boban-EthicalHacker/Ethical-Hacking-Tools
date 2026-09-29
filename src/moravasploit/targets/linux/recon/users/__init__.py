@@ -4,12 +4,24 @@ from rich.console import Console
 
 from moravasploit.core.menu import ask_select
 from moravasploit.core.session import save
-from moravasploit.targets.linux.recon.users import users_groups
+from moravasploit.targets.linux.recon.users import (
+    login_history,
+    pam_config,
+    password_policy,
+    ssh_keys,
+    sudoers,
+    users_groups,
+)
 
 console = Console()
 
 MODULES: dict[str, tuple[str, object]] = {
     "users_groups": ("Users and groups", users_groups.run),
+    "ssh_keys": ("SSH keys", ssh_keys.run),
+    "login_history": ("Login history", login_history.run),
+    "sudoers": ("Sudo configuration", sudoers.run),
+    "password_policy": ("Password policy", password_policy.run),
+    "pam_config": ("PAM configuration", pam_config.run),
 }
 
 

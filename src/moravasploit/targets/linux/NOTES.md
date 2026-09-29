@@ -16,14 +16,19 @@ Linux recon је организован по **подкатегоријама** 
 - environment — променљиве окружења са детекцијом осетљивих
 - time_info — временска зона, NTP статус, timedatectl
 
-### recon / users — 1 модул
+### recon / users — 6 модула — ЗАВРШЕНО ✓
 
-- users_groups — корисници, групе, UID 0, sudo конфигурација
-- (конвертован у JSON, следећи модули долазе)
+- users_groups — корисници, групе, UID 0
+- ssh_keys — authorized_keys и known_hosts
+- login_history — last/who/wtmpdb, неуспешни покушаји
+- sudoers — детаљна анализа sudo конфигурације
+- password_policy — политика лозинки, PAM опције
+- pam_config — цела PAM конфигурација
 
 ### recon / filesystem — 1 модул
 
 - suid_sgid — фајлови са SUID/SGID битовима
+- (следећи модули долазе)
 
 ### recon / network — празно
 
@@ -63,9 +68,13 @@ Linux recon је организован по **подкатегоријама** 
 
 ## Укупно
 
-- **8 модула** у recon (system 6, users 1, filesystem 1)
+- **13 модула** у recon
+  - system: 6
+  - users: 6
+  - filesystem: 1
 - **9 подкатегорија** у recon
 - **System подкатегорија завршена** ✓
+- **Users подкатегорија завршена** ✓
 
 ## Инфраструктура (заједничка)
 
@@ -97,22 +106,23 @@ Linux recon је организован по **подкатегоријама** 
 - `pyaxmlparser>=0.3.31` — за Android
 - `lief>=1.0.0` — за бинарне формате (iOS, касније Linux)
 
+## Специфичности тестног система
+
+- Kali GNU/Linux Rolling 2026.3 користи **wtmpdb** уместо
+  класичних `last`/`lastb` команди. Модул `login_history`
+  подржава оба система.
+- `/etc/sudoers` захтева root за читање. За потпуну анализу
+  покренути са:
+  `sudo /home/boban/my-projects/moravasploit/.venv/bin/moravasploit`
+
 ## Следеће на реду
-
-### Users подкатегорија (следеће)
-
-- ssh_keys — authorized_keys фајлови
-- sudoers — детаљна sudo конфигурација
-- login_history — last, w, who
-- password_policy — /etc/login.defs
-- pam_config — PAM конфигурација
 
 ### Filesystem подкатегорија
 
 - capabilities — Linux capabilities на фајловима
 - world_writable — фајлови које сви могу мењати
-- hidden_files — скривене фасцикле
-- recent_files — недавно измењени
+- hidden_files — скривене фасцикле и фајлови
+- recent_files — недавно измењени фајлови
 - suspicious_files — фајлови на необичним местима
 
 ### Network подкатегорија
@@ -191,7 +201,12 @@ linux/
 │ │ └── time_info.py
 │ ├── users/
 │ │ ├── init.py
-│ │ └── users_groups.py
+│ │ ├── users_groups.py
+│ │ ├── ssh_keys.py
+│ │ ├── login_history.py
+│ │ ├── sudoers.py
+│ │ ├── password_policy.py
+│ │ └── pam_config.py
 │ ├── filesystem/
 │ │ ├── init.py
 │ │ └── suid_sgid.py
@@ -211,8 +226,6 @@ linux/
 ├── post/
 └── payloads/
 
-
-
 ## Тестни систем
 
 - Kali GNU/Linux Rolling 2026.3
@@ -221,3 +234,4 @@ linux/
 - CPU: Intel i5-12500H
 - RAM: 15.33 GB
 - Timezone: Europe/Belgrade
+- Login system: wtmpdb
