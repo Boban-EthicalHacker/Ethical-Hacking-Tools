@@ -5,17 +5,21 @@
 
 ## Тренутно стање
 
-Linux recon је организован по **подкатегоријама** (слично
-као мобилне платформе, али другачије подељено — по темама).
+Linux recon је организован по **подкатегоријама** (по темама).
 
-### recon / system — 2 модула
+### recon / system — 6 модула — ЗАВРШЕНО ✓
 
-- system_info — hostname, OS, kernel, архитектура, uptime
+- system_info — hostname, OS, kernel, архитектура, uptime, boot time
 - kernel_info — верзија кернела, boot параметри, модули, sysctl
+- hardware_info — CPU, RAM, дискови, DMI подаци
+- boot_info — init систем, GRUB конфигурација, boot entries
+- environment — променљиве окружења са детекцијом осетљивих
+- time_info — временска зона, NTP статус, timedatectl
 
 ### recon / users — 1 модул
 
 - users_groups — корисници, групе, UID 0, sudo конфигурација
+- (конвертован у JSON, следећи модули долазе)
 
 ### recon / filesystem — 1 модул
 
@@ -59,17 +63,32 @@ Linux recon је организован по **подкатегоријама** 
 
 ## Укупно
 
-- **4 модула** у recon (system, users, filesystem)
+- **8 модула** у recon (system 6, users 1, filesystem 1)
 - **9 подкатегорија** у recon
+- **System подкатегорија завршена** ✓
 
 ## Инфраструктура (заједничка)
 
 - `core/menu.py`:
   - `ask_choice()` — нумерички унос (стари стил)
   - `ask_select()` — стрелице горе/доле (нови стил)
+- `core/session.py` — управљање сесијом:
+  - `start_session(target)` — прави нови фолдер у logs/
+  - `end_session()` — завршава сесију
+  - `save(module, data)` — чува JSON у текућу сесију
 - `exceptions.py` — ExitApp изузетак
-- Кратки тастери у менијима: `b` = back, `e` = exit
+- Кратки тастери: `b` = back, `e` = exit
 - Linux користи `ask_select()` свуда
+
+## Како ради сесија
+
+1. Кад уђеш у Linux, прави се фолдер:
+   `logs/linux_YYYY-MM-DD_HH-MM-SS/`
+2. Сваки модул након извршења чува JSON фајл у тај фолдер:
+   `logs/linux_.../system_info.json`
+3. JSON садржи: `module`, `saved_at`, `data`.
+4. Кад изађеш из Linux менија, сесија се завршава али фолдер остаје.
+5. Старе сесије бришеш ручно.
 
 ## Зависности (у pyproject.toml)
 
@@ -80,29 +99,24 @@ Linux recon је организован по **подкатегоријама** 
 
 ## Следеће на реду
 
-### Прво завршити system подкатегорију
+### Users подкатегорија (следеће)
 
-- hardware_info — CPU, RAM, дискови, GPU
-- boot_info — bootloader, init систем
-- environment — променљиве окружења
-
-### Затим остале подкатегорије (редом)
-
-**users:**
-- sudoers — детаљна sudo конфигурација
 - ssh_keys — authorized_keys фајлови
+- sudoers — детаљна sudo конфигурација
 - login_history — last, w, who
 - password_policy — /etc/login.defs
 - pam_config — PAM конфигурација
 
-**filesystem:**
+### Filesystem подкатегорија
+
 - capabilities — Linux capabilities на фајловима
 - world_writable — фајлови које сви могу мењати
 - hidden_files — скривене фасцикле
 - recent_files — недавно измењени
 - suspicious_files — фајлови на необичним местима
 
-**network:**
+### Network подкатегорија
+
 - network_info — интерфејси, IP, руте
 - open_ports — отворени портови
 - listening_services — шта слуша
@@ -110,7 +124,8 @@ Linux recon је организован по **подкатегоријама** 
 - dns_config — DNS подешавања
 - arp_table — ARP кеш
 
-**services:**
+### Services подкатегорија
+
 - services — systemd сервиси
 - processes — активни процеси
 - cron_jobs — заказани задаци
@@ -118,29 +133,30 @@ Linux recon је организован по **подкатегоријама** 
 - startup_scripts — скрипте при покретању
 - sockets — systemd sockets
 
-**software:**
+### Software подкатегорија
+
 - installed_packages — инсталирани пакети
 - outdated_packages — застарели
-- kernel_modules — учитани модули (део у kernel_info већ)
 - docker — Docker контејнери
 - compilers — инсталирани компајлери
 
-**security:**
+### Security подкатегорија
+
 - selinux_apparmor — SELinux/AppArmor статус
 - fail2ban — fail2ban конфигурација
 - audit_rules — audit правила
-- sysctl — детаљни sysctl
 - sshd_config — SSH сервер
 - tls_certs — TLS сертификати
 
-**credentials:**
+### Credentials подкатегорија
+
 - ssh_private_keys — приватни SSH кључеви
 - history_files — историја команди
 - config_secrets — тајне у конфиг фајловима
-- env_secrets — тајне у environment
 - cloud_creds — AWS, GCP, Azure креденцијали
 
-**logs:**
+### Logs подкатегорија
+
 - auth_logs — /var/log/auth.log
 - system_logs — /var/log/syslog
 - journal — systemd journal
@@ -168,7 +184,11 @@ linux/
 │ ├── system/
 │ │ ├── init.py
 │ │ ├── system_info.py
-│ │ └── kernel_info.py
+│ │ ├── kernel_info.py
+│ │ ├── hardware_info.py
+│ │ ├── boot_info.py
+│ │ ├── environment.py
+│ │ └── time_info.py
 │ ├── users/
 │ │ ├── init.py
 │ │ └── users_groups.py
@@ -192,12 +212,12 @@ linux/
 └── payloads/
 
 
+
 ## Тестни систем
 
 - Kali GNU/Linux Rolling 2026.3
 - Kernel: 7.0.12+kali-amd64
 - Architecture: x86_64
-- ASLR: 2 (пуно)
-- kptr_restrict: 0 (упозорење — pointer-и нису скривени)
-- dmesg_restrict: 0 (упозорење — dmesg доступан свима)
-- yama/ptrace_scope: 0 (упозорење — ptrace није ограничен)
+- CPU: Intel i5-12500H
+- RAM: 15.33 GB
+- Timezone: Europe/Belgrade

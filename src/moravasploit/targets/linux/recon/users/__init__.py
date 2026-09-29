@@ -3,6 +3,7 @@
 from rich.console import Console
 
 from moravasploit.core.menu import ask_select
+from moravasploit.core.session import save
 from moravasploit.targets.linux.recon.users import users_groups
 
 console = Console()
@@ -32,5 +33,14 @@ def menu() -> None:
         if choice is None:
             return
 
+        # Покрећемо модул.
         _, run_function = MODULES[choice]
-        run_function()
+
+        # Модул враћа речник са подацима.
+        result = run_function()
+
+        # Чувамо резултат у текућу сесију.
+        saved_path = save(choice, result)
+
+        if saved_path is not None:
+            console.print(f"[dim]Saved to: {saved_path}[/dim]")

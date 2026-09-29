@@ -2,6 +2,8 @@
 # Чита податке из /etc/os-release и покреће основне команде
 # (uname, uptime). Ради на локалном систему без потребе за
 # привилегијама.
+#
+# Модул враћа речник са подацима, који мени чува у JSON.
 import platform
 import subprocess
 from datetime import datetime, timedelta
@@ -15,36 +17,50 @@ console = Console()
 OS_RELEASE = Path("/etc/os-release")
 
 
-def run() -> None:
-    """Приказује основне информације о систему."""
+def run() -> dict:
+    """Приказује основне информације о систему.
+
+    Враћа речник са подацима за чување у JSON.
+    """
     console.print("\n[bold cyan]System information[/bold cyan]\n")
 
-    # Основни подаци.
-    _print_hostname()
-    _print_os_info()
-    _print_kernel()
-    _print_architecture()
-    _print_uptime()
+    # Прикупљамо податке у речник.
+    data: dict = {}
+
+    data["hostname"] = _get_hostname()
+    data.update(_get_os_info())
+    data["kernel"] = platform.release()
+    data["architecture"] = platform.machine()
+
+    uptime_data = _get_uptime_data()
+    data.update(uptime_data)
+
+    # Приказујемо на екран.
+    _print_data(data)
+
+    return data
 
 
-def _print_hostname() -> None:
-    """Приказује име рачунара."""
-    hostname = platform.node()
-    console.print(f"[bold]Hostname:[/bold]       {hostname}")
+def _get_hostname() -> str:
+    """Враћа име рачунара."""
+    return platform.node()
 
 
-def _print_os_info() -> None:
-    """Приказује информације о дистрибуцији из /etc/os-release."""
+def _get_os_info() -> dict:
+    """Чита /etc/os-release и враћа речник са подацима о дистрибуцији."""
+    result = {
+        "os_pretty_name": None,
+        "os_id": None,
+        "os_version_id": None,
+    }
+
     if not OS_RELEASE.exists():
-        console.print("[bold]OS:[/bold]             [dim]unknown[/dim]")
-        return
+        return result
 
     try:
-        # Читамо фајл као текст.
         content = OS_RELEASE.read_text(encoding="utf-8")
-    except Exception as error:
-        console.print(f"[bold]OS:[/bold]             [red]error: {error}[/red]")
-        return
+    except Exception:
+        return result
 
     # Парсирамо KEY=VALUE линије.
     data: dict[str, str] = {}
@@ -57,85 +73,52 @@ def _print_os_info() -> None:
             continue
 
         key, value = line.split("=", 1)
-
-        # Уклањамо наводнике око вредности.
         value = value.strip().strip("'\"")
-
         data[key] = value
 
-    # Приказујемо основне податке.
-    name = data.get("NAME", "Unknown")
-    version = data.get("VERSION", "")
-    pretty = data.get("PRETTY_NAME", "")
+    result["os_pretty_name"] = data.get("PRETTY_NAME")
+    result["os_id"] = data.get("ID")
+    result["os_version_id"] = data.get("VERSION_ID")
 
-    if pretty:
-        console.print(f"[bold]OS:[/bold]             {pretty}")
-    else:
-        console.print(f"[bold]OS:[/bold]             {name} {version}".strip())
-
-    # ID и VERSION_ID су корисни за програме.
-    os_id = data.get("ID")
-    version_id = data.get("VERSION_ID")
-
-    if os_id:
-        console.print(f"[bold]OS ID:[/bold]          {os_id}")
-    if version_id:
-        console.print(f"[bold]OS version:[/bold]     {version_id}")
+    return result
 
 
-def _print_kernel() -> None:
-    """Приказује верзију кернела."""
-    kernel = platform.release()
-    console.print(f"[bold]Kernel:[/bold]         {kernel}")
+def _get_uptime_data() -> dict:
+    """Враћа речник са uptime и boot time."""
+    result = {
+        "uptime_seconds": None,
+        "uptime_human": None,
+        "boot_time": None,
+    }
 
-
-def _print_architecture() -> None:
-    """Приказује архитектуру процесора."""
-    arch = platform.machine()
-    console.print(f"[bold]Architecture:[/bold]   {arch}")
-
-
-def _print_uptime() -> None:
-    """Приказује колико дуго систем ради.
-
-    Користи /proc/uptime (Linux специфично) или команду uptime
-    као резервну опцију.
-    """
     uptime_seconds = _get_uptime_seconds()
-
     if uptime_seconds is None:
-        console.print("[bold]Uptime:[/bold]         [dim]unknown[/dim]")
-        return
+        return result
 
-    # Форматирамо време.
-    uptime_str = _format_uptime(uptime_seconds)
-    console.print(f"[bold]Uptime:[/bold]         {uptime_str}")
+    result["uptime_seconds"] = int(uptime_seconds)
+    result["uptime_human"] = _format_uptime(uptime_seconds)
 
-    # Приказујемо и кад је систем подигнут.
     boot_time = datetime.now() - timedelta(seconds=uptime_seconds)
-    boot_str = boot_time.strftime("%Y-%m-%d %H:%M:%S")
-    console.print(f"[bold]Boot time:[/bold]      {boot_str}")
+    result["boot_time"] = boot_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    return result
 
 
 def _get_uptime_seconds() -> float | None:
     """Враћа број секунди од подизања система.
 
-    Прво покушава да чита /proc/uptime (најбрже и најтачније),
-    затим као резерву користи команду `uptime`.
+    Прво покушава да чита /proc/uptime, затим као резерву
+    користи команду `uptime`.
     """
-    # Прва опција — /proc/uptime.
     proc_uptime = Path("/proc/uptime")
     if proc_uptime.exists():
         try:
             content = proc_uptime.read_text().strip()
-            # Формат: "12345.67 98765.43"
-            # Први број је укупан uptime у секундама.
             first_value = content.split()[0]
             return float(first_value)
         except Exception:
             pass
 
-    # Друга опција — команда uptime са -p форматом.
     try:
         result = subprocess.run(
             ["uptime", "-p"],
@@ -143,26 +126,11 @@ def _get_uptime_seconds() -> float | None:
             text=True,
             timeout=5,
         )
-
         if result.returncode == 0:
-            # Парсирање није тривијално, па враћамо None
-            # и корисник види "unknown".
-            # Алтернативно, могли бисмо да парсирамо излаз
-            # као "up 5 days, 3 hours, 20 minutes".
-            return _parse_uptime_text(result.stdout.strip())
+            return None
     except Exception:
         pass
 
-    return None
-
-
-def _parse_uptime_text(text: str) -> float | None:
-    """Парсира излаз команде 'uptime -p'.
-
-    Пример: "up 2 weeks, 3 days, 4 hours, 5 minutes"
-    """
-    # Ово је резервна функција — не користимо је ако
-    # /proc/uptime постоји. За сада враћамо None.
     return None
 
 
@@ -183,3 +151,23 @@ def _format_uptime(seconds: float) -> str:
         parts.append(f"{minutes} minute{'s' if minutes != 1 else ''}")
 
     return ", ".join(parts)
+
+
+def _print_data(data: dict) -> None:
+    """Приказује податке на екран."""
+    console.print(f"[bold]Hostname:[/bold]       {data['hostname']}")
+
+    if data.get("os_pretty_name"):
+        console.print(f"[bold]OS:[/bold]             {data['os_pretty_name']}")
+    if data.get("os_id"):
+        console.print(f"[bold]OS ID:[/bold]          {data['os_id']}")
+    if data.get("os_version_id"):
+        console.print(f"[bold]OS version:[/bold]     {data['os_version_id']}")
+
+    console.print(f"[bold]Kernel:[/bold]         {data['kernel']}")
+    console.print(f"[bold]Architecture:[/bold]   {data['architecture']}")
+
+    if data.get("uptime_human"):
+        console.print(f"[bold]Uptime:[/bold]         {data['uptime_human']}")
+    if data.get("boot_time"):
+        console.print(f"[bold]Boot time:[/bold]      {data['boot_time']}")

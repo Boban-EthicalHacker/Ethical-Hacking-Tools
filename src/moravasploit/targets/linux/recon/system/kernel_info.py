@@ -2,6 +2,8 @@
 # Кернел је срце Linux система. Његова верзија, учитани
 # модули и параметри могу открити познате рањивости или
 # необичне конфигурације.
+#
+# Модул враћа речник са подацима, који мени чува у JSON.
 from pathlib import Path
 
 from rich.console import Console
@@ -15,77 +17,64 @@ PROC_MODULES = Path("/proc/modules")
 PROC_SYS_KERNEL = Path("/proc/sys/kernel")
 
 
-def run() -> None:
-    """Приказује информације о кернелу."""
+def run() -> dict:
+    """Приказује информације о кернелу.
+
+    Враћа речник са подацима за чување у JSON.
+    """
     console.print("\n[bold cyan]Kernel information[/bold cyan]\n")
 
-    # Основне информације.
-    _print_version()
+    # Прикупљамо податке.
+    data: dict = {}
 
-    # Параметри покретања кернела.
-    _print_cmdline()
+    data["version"] = _read_version()
+    data["boot_parameters"] = _read_cmdline()
+    data["loaded_modules"] = _read_modules()
+    data["sysctl"] = _read_sysctl()
 
-    # Учитани модули кернела.
-    _print_modules()
+    # Приказујемо на екран.
+    _print_data(data)
 
-    # Кључни sysctl параметри.
-    _print_sysctl()
+    return data
 
 
-def _print_version() -> None:
-    """Приказује верзију кернела из /proc/version."""
+def _read_version() -> str | None:
+    """Чита /proc/version."""
     if not PROC_VERSION.exists():
-        return
+        return None
 
     try:
-        content = PROC_VERSION.read_text().strip()
+        return PROC_VERSION.read_text().strip()
     except Exception:
-        return
-
-    # /proc/version изгледа овако:
-    # "Linux version 6.11.2-amd64 (debian-kernel@lists.debian.org)
-    #  (gcc-12 ...) #1 SMP PREEMPT_DYNAMIC ..."
-    console.print(f"[bold]Version:[/bold]        {content}")
-    console.print()
+        return None
 
 
-def _print_cmdline() -> None:
-    """Приказује параметре покретања кернела."""
+def _read_cmdline() -> list[str]:
+    """Чита /proc/cmdline и враћа листу параметара."""
     if not PROC_CMDLINE.exists():
-        return
+        return []
 
     try:
         content = PROC_CMDLINE.read_text().strip()
     except Exception:
-        return
+        return []
 
     if not content:
-        console.print("[bold]Boot parameters:[/bold] [dim]none[/dim]\n")
-        return
+        return []
 
-    console.print("[bold]Boot parameters:[/bold]\n")
-
-    # Параметри су раздвојени размацима.
-    params = content.split()
-
-    for param in params:
-        console.print(f"  {param}")
-
-    console.print()
+    return content.split()
 
 
-def _print_modules() -> None:
-    """Приказује учитане модуле кернела."""
+def _read_modules() -> list[dict]:
+    """Чита /proc/modules и враћа листу модула."""
     if not PROC_MODULES.exists():
-        return
+        return []
 
     try:
         content = PROC_MODULES.read_text()
     except Exception:
-        return
+        return []
 
-    # Свака линија има формат:
-    # name size refcount dependencies state address
     modules = []
 
     for line in content.splitlines():
@@ -95,6 +84,7 @@ def _print_modules() -> None:
 
         name = parts[0]
         size = int(parts[1]) if parts[1].isdigit() else 0
+
         try:
             refcount = int(parts[2])
         except ValueError:
@@ -102,69 +92,101 @@ def _print_modules() -> None:
 
         modules.append({
             "name": name,
-            "size": size,
+            "size_bytes": size,
             "refcount": refcount,
         })
 
-    if not modules:
-        console.print("[bold]Loaded modules:[/bold] [dim]none[/dim]\n")
-        return
-
-    console.print(f"[bold]Loaded modules:[/bold] {len(modules)}\n")
-
-    # Приказујемо првих 30 модула.
-    limit = 30
-    for m in sorted(modules, key=lambda x: x["name"])[:limit]:
-        size_str = _format_size(m["size"])
-        console.print(
-            f"  {m['name']:30s}  "
-            f"[dim]{size_str:>10s}  refcount={m['refcount']}[/dim]"
-        )
-
-    if len(modules) > limit:
-        remaining = len(modules) - limit
-        console.print(f"  [dim]... and {remaining} more[/dim]")
-
-    console.print()
+    return modules
 
 
-def _print_sysctl() -> None:
-    """Приказује кључне sysctl параметре."""
-    # Параметри који су важни за безбедност.
-    params = {
-        "hostname": "Hostname",
-        "ostype": "OS type",
-        "osrelease": "OS release",
-        "version": "Full version",
-        "randomize_va_space": "ASLR (2 = full, 0 = disabled)",
-        "kptr_restrict": "Kernel pointer restriction",
-        "dmesg_restrict": "dmesg access restriction",
-        "yama/ptrace_scope": "ptrace scope",
-        "unprivileged_bpf_disabled": "BPF for unprivileged",
-        "kexec_load_disabled": "kexec disabled",
-    }
+def _read_sysctl() -> dict:
+    """Чита кључне sysctl параметре.
 
-    console.print("[bold]Security-relevant sysctl:[/bold]\n")
+    Враћа речник са вредностима. Само они параметри који
+    су доступни (неки захтевају root).
+    """
+    params = [
+        "hostname",
+        "ostype",
+        "osrelease",
+        "version",
+        "randomize_va_space",
+        "kptr_restrict",
+        "dmesg_restrict",
+        "yama/ptrace_scope",
+        "unprivileged_bpf_disabled",
+        "kexec_load_disabled",
+    ]
 
-    found_any = False
+    result = {}
 
-    for key, description in params.items():
+    for key in params:
         path = PROC_SYS_KERNEL / key
         if not path.exists():
             continue
 
         try:
             value = path.read_text().strip()
+            result[key] = value
         except Exception:
             continue
 
-        found_any = True
-        console.print(f"  {key:30s}  [cyan]{value}[/cyan]")
-        console.print(f"  [dim]{description}[/dim]")
+    return result
+
+
+def _print_data(data: dict) -> None:
+    """Приказује податке на екран."""
+    # Верзија.
+    if data.get("version"):
+        console.print(f"[bold]Version:[/bold]        {data['version']}")
         console.print()
 
-    if not found_any:
-        console.print("  [dim]No sysctl values accessible.[/dim]\n")
+    # Boot параметри.
+    params = data.get("boot_parameters", [])
+    if params:
+        console.print("[bold]Boot parameters:[/bold]\n")
+        for param in params:
+            console.print(f"  {param}")
+        console.print()
+
+    # Модули.
+    modules = data.get("loaded_modules", [])
+    if modules:
+        console.print(f"[bold]Loaded modules:[/bold] {len(modules)}\n")
+
+        limit = 30
+        for m in sorted(modules, key=lambda x: x["name"])[:limit]:
+            size_str = _format_size(m["size_bytes"])
+            console.print(
+                f"  {m['name']:30s}  "
+                f"[dim]{size_str:>10s}  refcount={m['refcount']}[/dim]"
+            )
+
+        if len(modules) > limit:
+            remaining = len(modules) - limit
+            console.print(f"  [dim]... and {remaining} more[/dim]")
+
+        console.print()
+
+    # Sysctl.
+    sysctl = data.get("sysctl", {})
+    if sysctl:
+        console.print("[bold]Security-relevant sysctl:[/bold]\n")
+
+        descriptions = {
+            "randomize_va_space": "ASLR (2 = full, 0 = disabled)",
+            "kptr_restrict": "Kernel pointer restriction",
+            "dmesg_restrict": "dmesg access restriction",
+            "yama/ptrace_scope": "ptrace scope",
+            "unprivileged_bpf_disabled": "BPF for unprivileged",
+            "kexec_load_disabled": "kexec disabled",
+        }
+
+        for key, value in sysctl.items():
+            console.print(f"  {key:30s}  [cyan]{value}[/cyan]")
+            if key in descriptions:
+                console.print(f"  [dim]{descriptions[key]}[/dim]")
+                console.print()
 
 
 def _format_size(size: int) -> str:
