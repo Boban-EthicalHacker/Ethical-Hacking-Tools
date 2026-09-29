@@ -3,12 +3,19 @@
 from rich.console import Console
 
 from moravasploit.core.menu import ask_select
-from moravasploit.targets.linux.recon.filesystem import suid_sgid
+from moravasploit.core.session import save
+from moravasploit.targets.linux.recon.filesystem import (
+    capabilities,
+    suid_sgid,
+    world_writable,
+)
 
 console = Console()
 
 MODULES: dict[str, tuple[str, object]] = {
     "suid_sgid": ("SUID / SGID files", suid_sgid.run),
+    "capabilities": ("Linux capabilities", capabilities.run),
+    "world_writable": ("World-writable files", world_writable.run),
 }
 
 
@@ -35,4 +42,8 @@ def menu() -> None:
             return
 
         _, run_function = MODULES[choice]
-        run_function()
+        result = run_function()
+        saved_path = save(choice, result)
+
+        if saved_path is not None:
+            console.print(f"[dim]Saved to: {saved_path}[/dim]")
