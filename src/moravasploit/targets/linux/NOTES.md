@@ -43,9 +43,14 @@ Linux recon је организован по **подкатегоријама** 
 - dns_config — resolv.conf, hosts, nsswitch, systemd-resolved
 - arp_table — ARP кеш, gateway, дупликати
 
-### recon / services — празно
+### recon / services — 6 модула — ЗАВРШЕНО ✓
 
-- (чека модуле)
+- services — systemd сервиси
+- processes — активни процеси (чита /proc/)
+- cron_jobs — cron, cron.d, периодични, кориснички
+- timers — systemd timers
+- startup_scripts — rc.local, init.d, profile.d, autostart
+- sockets — systemd socket јединице
 
 ### recon / software — празно
 
@@ -77,13 +82,14 @@ Linux recon је организован по **подкатегоријама** 
 
 ## Укупно
 
-- **24 модула** у recon
+- **30 модула** у recon
   - system: 6 ✓
   - users: 6 ✓
   - filesystem: 6 ✓
   - network: 6 ✓
+  - services: 6 ✓
 - **9 подкатегорија** у recon
-- **Завршене подкатегорије:** System, Users, Filesystem, Network
+- **Завршене подкатегорије:** System, Users, Filesystem, Network, Services
 
 ## Инфраструктура (заједничка)
 
@@ -128,24 +134,21 @@ Linux recon је организован по **подкатегоријама** 
   `/home/` као нормалну локацију.
 - Firewall на систему није активан (нема nftables правила).
 - Систем користи `ss` за мрежне информације (не `netstat`).
+- Модул `sockets` подржава **netlink формату** са додатном
+  Port ID колоном.
+- Модул `startup_scripts` има whitelist за `x11-common`
+  и сличне системске скрипте.
 
 ## Следеће на реду
-
-### Services подкатегорија
-
-- services — systemd сервиси
-- processes — активни процеси
-- cron_jobs — заказани задаци
-- timers — systemd timers
-- startup_scripts — скрипте при покретању
-- sockets — systemd sockets
 
 ### Software подкатегорија
 
 - installed_packages — инсталирани пакети
-- outdated_packages — застарели
-- docker — Docker контејнери
-- compilers — инсталирани компајлери
+- outdated_packages — застарели пакети
+- docker — Docker контејнери и слике
+- compilers — инсталирани компајлери (GTFOBins потенцијал)
+- suid_interpreters — интерпретери са SUID
+- package_managers — доступни package manager-и
 
 ### Security подкатегорија
 
@@ -154,6 +157,7 @@ Linux recon је организован по **подкатегоријама** 
 - audit_rules — audit правила
 - sshd_config — SSH сервер
 - tls_certs — TLS сертификати
+- security_modules — учитани LSM модули
 
 ### Credentials подкатегорија
 
@@ -161,6 +165,8 @@ Linux recon је организован по **подкатегоријама** 
 - history_files — историја команди
 - config_secrets — тајне у конфиг фајловима
 - cloud_creds — AWS, GCP, Azure креденцијали
+- browser_data — подаци из browser-а
+- git_credentials — git credentials
 
 ### Logs подкатегорија
 
@@ -168,6 +174,8 @@ Linux recon је организован по **подкатегоријама** 
 - system_logs — /var/log/syslog
 - journal — systemd journal
 - app_logs — логови апликација
+- kernel_logs — /var/log/kern.log
+- audit_logs — /var/log/audit/
 
 ## Циљ
 
@@ -182,7 +190,6 @@ Linux recon је организован по **подкатегоријама** 
 - iOS — 12 модула у recon/static (завршено)
 
 ## Структура Linux фолдера
-
 
 linux/
 ├── NOTES.md
@@ -222,7 +229,13 @@ linux/
 │ │ ├── dns_config.py
 │ │ └── arp_table.py
 │ ├── services/
-│ │ └── init.py
+│ │ ├── init.py
+│ │ ├── services.py
+│ │ ├── processes.py
+│ │ ├── cron_jobs.py
+│ │ ├── timers.py
+│ │ ├── startup_scripts.py
+│ │ └── sockets.py
 │ ├── software/
 │ │ └── init.py
 │ ├── security/
@@ -247,3 +260,4 @@ linux/
 - Login system: wtmpdb
 - Firewall: неактиван
 - Мрежа: wlan0 (UP), eth0 (DOWN)
+
