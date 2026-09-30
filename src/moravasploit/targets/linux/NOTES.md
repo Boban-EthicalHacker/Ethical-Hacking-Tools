@@ -25,10 +25,14 @@ Linux recon је организован по **подкатегоријама** 
 - password_policy — политика лозинки, PAM опције
 - pam_config — цела PAM конфигурација
 
-### recon / filesystem — 1 модул
+### recon / filesystem — 6 модула — ЗАВРШЕНО ✓
 
 - suid_sgid — фајлови са SUID/SGID битовима
-- (следећи модули долазе)
+- capabilities — Linux capabilities на фајловима
+- world_writable — фајлови које сви могу мењати
+- hidden_files — скривени фајлови на необичним локацијама
+- recent_files — недавно измењени фајлови
+- suspicious_files — фајлови са сумњивим именима и локацијама
 
 ### recon / network — празно
 
@@ -68,13 +72,12 @@ Linux recon је организован по **подкатегоријама** 
 
 ## Укупно
 
-- **13 модула** у recon
-  - system: 6
-  - users: 6
-  - filesystem: 1
+- **18 модула** у recon
+  - system: 6 ✓
+  - users: 6 ✓
+  - filesystem: 6 ✓
 - **9 подкатегорија** у recon
-- **System подкатегорија завршена** ✓
-- **Users подкатегорија завршена** ✓
+- **Завршене подкатегорије:** System, Users, Filesystem
 
 ## Инфраструктура (заједничка)
 
@@ -114,22 +117,17 @@ Linux recon је организован по **подкатегоријама** 
 - `/etc/sudoers` захтева root за читање. За потпуну анализу
   покренути са:
   `sudo /home/boban/my-projects/moravasploit/.venv/bin/moravasploit`
+- `/home/boban` има дозволу 777 (намерно, због Laravel
+  пројеката). Модули који претражују систем третирају
+  `/home/` као нормалну локацију.
 
 ## Следеће на реду
-
-### Filesystem подкатегорија
-
-- capabilities — Linux capabilities на фајловима
-- world_writable — фајлови које сви могу мењати
-- hidden_files — скривене фасцикле и фајлови
-- recent_files — недавно измењени фајлови
-- suspicious_files — фајлови на необичним местима
 
 ### Network подкатегорија
 
 - network_info — интерфејси, IP, руте
-- open_ports — отворени портови
-- listening_services — шта слуша
+- open_ports — отворени портови (локално)
+- listening_services — који сервиси слушају
 - firewall_rules — iptables/nftables/ufw
 - dns_config — DNS подешавања
 - arp_table — ARP кеш
@@ -209,7 +207,12 @@ linux/
 │ │ └── pam_config.py
 │ ├── filesystem/
 │ │ ├── init.py
-│ │ └── suid_sgid.py
+│ │ ├── suid_sgid.py
+│ │ ├── capabilities.py
+│ │ ├── world_writable.py
+│ │ ├── hidden_files.py
+│ │ ├── recent_files.py
+│ │ └── suspicious_files.py
 │ ├── network/
 │ │ └── init.py
 │ ├── services/
@@ -225,6 +228,7 @@ linux/
 ├── exploits/
 ├── post/
 └── payloads/
+
 
 ## Тестни систем
 

@@ -6,7 +6,10 @@ from moravasploit.core.menu import ask_select
 from moravasploit.core.session import save
 from moravasploit.targets.linux.recon.filesystem import (
     capabilities,
+    hidden_files,
+    recent_files,
     suid_sgid,
+    suspicious_files,
     world_writable,
 )
 
@@ -16,6 +19,9 @@ MODULES: dict[str, tuple[str, object]] = {
     "suid_sgid": ("SUID / SGID files", suid_sgid.run),
     "capabilities": ("Linux capabilities", capabilities.run),
     "world_writable": ("World-writable files", world_writable.run),
+    "hidden_files": ("Hidden files", hidden_files.run),
+    "recent_files": ("Recently modified files", recent_files.run),
+    "suspicious_files": ("Suspicious files", suspicious_files.run),
 }
 
 
