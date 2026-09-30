@@ -34,9 +34,14 @@ Linux recon је организован по **подкатегоријама** 
 - recent_files — недавно измењени фајлови
 - suspicious_files — фајлови са сумњивим именима и локацијама
 
-### recon / network — празно
+### recon / network — 6 модула — ЗАВРШЕНО ✓
 
-- (чека модуле)
+- network_info — интерфејси, IP адресе, руте, DNS
+- open_ports — отворени портови (чита /proc/net/)
+- listening_services — процеси који слушају (ss/netstat)
+- firewall_rules — ufw, firewalld, nftables, iptables
+- dns_config — resolv.conf, hosts, nsswitch, systemd-resolved
+- arp_table — ARP кеш, gateway, дупликати
 
 ### recon / services — празно
 
@@ -72,12 +77,13 @@ Linux recon је организован по **подкатегоријама** 
 
 ## Укупно
 
-- **18 модула** у recon
+- **24 модула** у recon
   - system: 6 ✓
   - users: 6 ✓
   - filesystem: 6 ✓
+  - network: 6 ✓
 - **9 подкатегорија** у recon
-- **Завршене подкатегорије:** System, Users, Filesystem
+- **Завршене подкатегорије:** System, Users, Filesystem, Network
 
 ## Инфраструктура (заједничка)
 
@@ -120,17 +126,10 @@ Linux recon је организован по **подкатегоријама** 
 - `/home/boban` има дозволу 777 (намерно, због Laravel
   пројеката). Модули који претражују систем третирају
   `/home/` као нормалну локацију.
+- Firewall на систему није активан (нема nftables правила).
+- Систем користи `ss` за мрежне информације (не `netstat`).
 
 ## Следеће на реду
-
-### Network подкатегорија
-
-- network_info — интерфејси, IP, руте
-- open_ports — отворени портови (локално)
-- listening_services — који сервиси слушају
-- firewall_rules — iptables/nftables/ufw
-- dns_config — DNS подешавања
-- arp_table — ARP кеш
 
 ### Services подкатегорија
 
@@ -184,6 +183,7 @@ Linux recon је организован по **подкатегоријама** 
 
 ## Структура Linux фолдера
 
+
 linux/
 ├── NOTES.md
 ├── init.py
@@ -214,7 +214,13 @@ linux/
 │ │ ├── recent_files.py
 │ │ └── suspicious_files.py
 │ ├── network/
-│ │ └── init.py
+│ │ ├── init.py
+│ │ ├── network_info.py
+│ │ ├── open_ports.py
+│ │ ├── listening_services.py
+│ │ ├── firewall_rules.py
+│ │ ├── dns_config.py
+│ │ └── arp_table.py
 │ ├── services/
 │ │ └── init.py
 │ ├── software/
@@ -239,3 +245,5 @@ linux/
 - RAM: 15.33 GB
 - Timezone: Europe/Belgrade
 - Login system: wtmpdb
+- Firewall: неактиван
+- Мрежа: wlan0 (UP), eth0 (DOWN)
