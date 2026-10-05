@@ -61,9 +61,14 @@ Linux recon је организован по **подкатегоријама** 
 - suid_interpreters — SUID интерпретери (GTFOBins листа)
 - language_packages — pip, npm, gem, go, cargo
 
-### recon / security — празно
+### recon / security — 6 модула — ЗАВРШЕНО ✓
 
-- (чека модуле)
+- selinux_apparmor — SELinux/AppArmor статус, LSM модули
+- fail2ban — fail2ban jail конфигурација
+- audit_rules — audit правила и конфигурација
+- sshd_config — SSH сервер конфигурација са препорукама
+- tls_certs — CA сертификати, приватни кључеви, истекли
+- security_modules — LSM модули, kernel hardening, CPU рањивости
 
 ### recon / credentials — празно
 
@@ -87,16 +92,17 @@ Linux recon је организован по **подкатегоријама** 
 
 ## Укупно
 
-- **36 модула** у recon
+- **42 модула** у recon
   - system: 6 ✓
   - users: 6 ✓
   - filesystem: 6 ✓
   - network: 6 ✓
   - services: 6 ✓
   - software: 6 ✓
+  - security: 6 ✓
 - **9 подкатегорија** у recon
 - **Завршене подкатегорије:** System, Users, Filesystem,
-  Network, Services, Software
+  Network, Services, Software, Security
 
 ## Инфраструктура (заједничка)
 
@@ -146,26 +152,23 @@ Linux recon је организован по **подкатегоријама** 
 - Модул `startup_scripts` има whitelist за `x11-common`
   и сличне системске скрипте.
 - Модул `language_packages` чита пакете из тренутног `.venv`,
-  не глобалне системске Python пакете (то је очекивано
-  понашање).
+  не глобалне системске Python пакете.
 - Docker није инсталиран на тестном систему.
+- fail2ban није инсталиран на тестном систему.
+- auditd није инсталиран на тестном систему.
+- AppArmor модул је учитан али нема активних профила.
+- Систем има 122 CA сертификата и 1 кориснички
+  self-signed сертификат (`bubislav.bubislav`).
+- CPU има све познате рањивости митиговане или
+  није погођен.
 - Систем има 4171 dpkg пакет, 268 доступних надоградњи.
 
 ## Следеће на реду
 
-### Security подкатегорија
-
-- selinux_apparmor — SELinux/AppArmor статус
-- fail2ban — fail2ban конфигурација
-- audit_rules — audit правила
-- sshd_config — SSH сервер
-- tls_certs — TLS сертификати на систему
-- security_modules — учитани LSM модули
-
 ### Credentials подкатегорија
 
 - ssh_private_keys — приватни SSH кључеви
-- history_files — историја команди
+- history_files — историја команди (bash, zsh)
 - config_secrets — тајне у конфиг фајловима
 - cloud_creds — AWS, GCP, Azure креденцијали
 - browser_data — подаци из browser-а
@@ -248,7 +251,13 @@ linux/
 │ │ ├── suid_interpreters.py
 │ │ └── language_packages.py
 │ ├── security/
-│ │ └── init.py
+│ │ ├── init.py
+│ │ ├── selinux_apparmor.py
+│ │ ├── fail2ban.py
+│ │ ├── audit_rules.py
+│ │ ├── sshd_config.py
+│ │ ├── tls_certs.py
+│ │ └── security_modules.py
 │ ├── credentials/
 │ │ └── init.py
 │ └── logs/
@@ -256,7 +265,6 @@ linux/
 ├── exploits/
 ├── post/
 └── payloads/
-
 
 
 ## Тестни систем
@@ -271,3 +279,9 @@ linux/
 - Firewall: неактиван
 - Мрежа: wlan0 (UP), eth0 (DOWN)
 - Docker: није инсталиран
+- fail2ban: није инсталиран
+- auditd: није инсталиран
+- SELinux: није доступан
+- AppArmor: модул учитан, нема профила
+- MAC систем: делимично активан
+- CPU рањивости: све митиговане
