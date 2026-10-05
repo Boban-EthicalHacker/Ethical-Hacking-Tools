@@ -52,9 +52,14 @@ Linux recon је организован по **подкатегоријама** 
 - startup_scripts — rc.local, init.d, profile.d, autostart
 - sockets — systemd socket јединице
 
-### recon / software — празно
+### recon / software — 6 модула — ЗАВРШЕНО ✓
 
-- (чека модуле)
+- installed_packages — dpkg, rpm, pacman, apk, snap, flatpak
+- outdated_packages — застарели пакети, security updates
+- docker — контејнери, слике, мреже, volumes
+- compilers — 30+ компајлера и интерпретера
+- suid_interpreters — SUID интерпретери (GTFOBins листа)
+- language_packages — pip, npm, gem, go, cargo
 
 ### recon / security — празно
 
@@ -82,14 +87,16 @@ Linux recon је организован по **подкатегоријама** 
 
 ## Укупно
 
-- **30 модула** у recon
+- **36 модула** у recon
   - system: 6 ✓
   - users: 6 ✓
   - filesystem: 6 ✓
   - network: 6 ✓
   - services: 6 ✓
+  - software: 6 ✓
 - **9 подкатегорија** у recon
-- **Завршене подкатегорије:** System, Users, Filesystem, Network, Services
+- **Завршене подкатегорије:** System, Users, Filesystem,
+  Network, Services, Software
 
 ## Инфраструктура (заједничка)
 
@@ -134,21 +141,17 @@ Linux recon је организован по **подкатегоријама** 
   `/home/` као нормалну локацију.
 - Firewall на систему није активан (нема nftables правила).
 - Систем користи `ss` за мрежне информације (не `netstat`).
-- Модул `sockets` подржава **netlink формату** са додатном
+- Модул `sockets` подржава **netlink формат** са додатном
   Port ID колоном.
 - Модул `startup_scripts` има whitelist за `x11-common`
   и сличне системске скрипте.
+- Модул `language_packages` чита пакете из тренутног `.venv`,
+  не глобалне системске Python пакете (то је очекивано
+  понашање).
+- Docker није инсталиран на тестном систему.
+- Систем има 4171 dpkg пакет, 268 доступних надоградњи.
 
 ## Следеће на реду
-
-### Software подкатегорија
-
-- installed_packages — инсталирани пакети
-- outdated_packages — застарели пакети
-- docker — Docker контејнери и слике
-- compilers — инсталирани компајлери (GTFOBins потенцијал)
-- suid_interpreters — интерпретери са SUID
-- package_managers — доступни package manager-и
 
 ### Security подкатегорија
 
@@ -156,7 +159,7 @@ Linux recon је организован по **подкатегоријама** 
 - fail2ban — fail2ban конфигурација
 - audit_rules — audit правила
 - sshd_config — SSH сервер
-- tls_certs — TLS сертификати
+- tls_certs — TLS сертификати на систему
 - security_modules — учитани LSM модули
 
 ### Credentials подкатегорија
@@ -237,7 +240,13 @@ linux/
 │ │ ├── startup_scripts.py
 │ │ └── sockets.py
 │ ├── software/
-│ │ └── init.py
+│ │ ├── init.py
+│ │ ├── installed_packages.py
+│ │ ├── outdated_packages.py
+│ │ ├── docker.py
+│ │ ├── compilers.py
+│ │ ├── suid_interpreters.py
+│ │ └── language_packages.py
 │ ├── security/
 │ │ └── init.py
 │ ├── credentials/
@@ -247,6 +256,7 @@ linux/
 ├── exploits/
 ├── post/
 └── payloads/
+
 
 
 ## Тестни систем
@@ -260,4 +270,4 @@ linux/
 - Login system: wtmpdb
 - Firewall: неактиван
 - Мрежа: wlan0 (UP), eth0 (DOWN)
-
+- Docker: није инсталиран
