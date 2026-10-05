@@ -6,6 +6,7 @@
 ## Тренутно стање
 
 Linux recon је организован по **подкатегоријама** (по темама).
+Свих 9 подкатегорија је завршено — укупно **54 модула**.
 
 ### recon / system — 6 модула — ЗАВРШЕНО ✓
 
@@ -79,25 +80,18 @@ Linux recon је организован по **подкатегоријама** 
 - browser_data — Firefox, Chrome, Brave профили и подаци
 - git_credentials — .gitconfig, .git-credentials, remote URL-ови
 
-### recon / logs — празно
+### recon / logs — 6 модула — ЗАВРШЕНО ✓
 
-- (чека модуле)
-
-### exploits
-
-- празно
-
-### post
-
-- празно
-
-### payloads
-
-- празно
+- auth_logs — auth логови, systemd journal fallback
+- system_logs — /var/log/syslog, journal, грешке по сервису
+- journal — systemd journal, boot историја, disk usage
+- app_logs — web, DB, mail логови, детекција напада
+- kernel_logs — dmesg, kernel грешке, OOM, USB догађаји
+- audit_logs — audit записи, AVC деније, EXECVE команде
 
 ## Укупно
 
-- **48 модула** у recon
+- **54 модула** у recon
   - system: 6 ✓
   - users: 6 ✓
   - filesystem: 6 ✓
@@ -106,9 +100,9 @@ Linux recon је организован по **подкатегоријама** 
   - software: 6 ✓
   - security: 6 ✓
   - credentials: 6 ✓
+  - logs: 6 ✓
 - **9 подкатегорија** у recon
-- **Завршене подкатегорије:** System, Users, Filesystem,
-  Network, Services, Software, Security, Credentials
+- **Linux recon је COMPLETE** ✓
 
 ## Инфраструктура (заједничка)
 
@@ -143,56 +137,91 @@ Linux recon је организован по **подкатегоријама** 
 ## Специфичности тестног система
 
 - Kali GNU/Linux Rolling 2026.3 користи **wtmpdb** уместо
-  класичних `last`/`lastb` команди. Модул `login_history`
-  подржава оба система.
-- `/etc/sudoers` захтева root за читање. За потпуну анализу
-  покренути са:
+  класичних `last`/`lastb` команди.
+- `/etc/sudoers` захтева root за читање:
   `sudo /home/boban/my-projects/moravasploit/.venv/bin/moravasploit`
 - `/home/boban` има дозволу 777 (намерно, због Laravel
-  пројеката). Модули који претражују систем третирају
-  `/home/` као нормалну локацију.
-- Firewall на систему није активан (нема nftables правила).
-- Систем користи `ss` за мрежне информације (не `netstat`).
-- Модул `sockets` подржава **netlink формат** са додатном
-  Port ID колоном.
-- Модул `startup_scripts` има whitelist за `x11-common`
-  и сличне системске скрипте.
-- Модул `language_packages` чита пакете из тренутног `.venv`,
-  не глобалне системске Python пакете.
-- Docker није инсталиран на тестном систему.
-- fail2ban није инсталиран на тестном систему.
-- auditd није инсталиран на тестном систему.
-- AppArmor модул је учитан али нема активних профила.
-- Систем има 122 CA сертификата и 1 кориснички
-  self-signed сертификат (`bubislav.bubislav`).
-- CPU има све познате рањивости митиговане или
-  није погођен.
-- Систем има 4171 dpkg пакет, 268 доступних надоградњи.
-- Корисник има више GitHub налога:
-  `Boban-EthicalHacker`, `Bubislav92`, `bobanwebdevelopment92-collab`.
-- Модул `config_secrets` пронашао 98 .env фајлова
-  у Laravel пројектима (1496 тајни).
-- Browser профили: Firefox, Chrome (1676 колачића),
-  Brave. Укупнo 3 профила.
-- 9 приватних SSH кључева пронађено, 1 са слабим
-  permissions (`~/thm/id_rsa_1593558668558.id_rsa`).
-- Нема cloud креденцијала (AWS, GCP, Azure) на систему.
+  пројеката).
+- Firewall није активан (нема nftables правила).
+- Систем користи `ss` (не `netstat`).
+- Модул `sockets` подржава netlink формат.
+- Docker није инсталиран.
+- fail2ban није инсталиран.
+- auditd није инсталиран.
+- AppArmor модул учитан, али нема профила.
+- Систем има 122 CA сертификата.
+- CPU има све рањивости митиговане.
+- 4171 dpkg пакет, 268 надоградњи.
+- Journal је persistent (872.9M, 175 boot-ова).
+- Корисник има више GitHub налога.
+- 98 .env фајлова у пројектима.
+- 9 приватних SSH кључева (1 са слабим permissions).
 
 ## Следеће на реду
 
-### Logs подкатегорија (последња)
+Linux recon је завршен. Следеће фазе пројекта:
 
-- auth_logs — /var/log/auth.log, неуспешне пријаве
-- system_logs — /var/log/syslog, /var/log/messages
-- journal — systemd journal (journalctl)
-- app_logs — логови апликација (nginx, apache, mysql)
-- kernel_logs — /var/log/kern.log, dmesg
-- audit_logs — /var/log/audit/, auditd записи
+### exploits (~15 модула)
+
+Провере за познате CVE-ове и privilege escalation векторе.
+Свака провера је само детекција, без експлоатације.
+
+Планирани модули:
+- kernel_cve_check — провера верзије кернела против CVE базе
+- dirty_pipe — провера за CVE-2022-0847
+- pwnkit — провера за CVE-2021-4034 (pkexec)
+- sudo_baron_samedit — провера за CVE-2021-3156
+- sudo_baron_samedit_v2 — провера за CVE-2021-23239
+- polkit_cve — провера за CVE-2021-3560
+- overlayfs_cve — провера за CVE-2021-3493
+- netfilter_cve — провера за CVE-2021-22555, CVE-2022-25636
+- glibc_ghost — провера за CVE-2015-0235
+- io_uring_cve — провера за CVE-2022-29582
+- nf_tables_cve — провера за CVE-2023-32233
+- sudo_rsync — провера GTFOBins за sudo
+- kernel_version_check — упоређивање са познатим рањивим
+- package_cve_check — провера пакета против CVE базе
+- suid_exploit_check — провера SUID фајлова против GTFOBins
+
+### post (~10 модула)
+
+Екстракција података и анализа конфигурација након приступа.
+
+Планирани модули:
+- data_extraction — прикупљање корисничких података
+- config_dump — dump конфигурационих фајлова
+- password_hashes — екстракција /etc/shadow (само ако је доступно)
+- ssh_key_dump — прикупљање SSH кључева
+- browser_data_dump — екстракција browser података
+- history_dump — dump историје команди
+- network_pivot — преглед мрежа за даље ширење
+- process_injection_check — могућност ptrace
+- persistence_check — постојећи persistence механизми
+- cleanup — уклањање трагова (само у овлашћеном тесту)
+
+### payloads (~5 модула)
+
+Бенигни тестни садржај за проверу детекције.
+
+Планирани модули:
+- reverse_shell_bash — бенигни reverse shell за тест
+- reverse_shell_python — Python reverse shell
+- bind_shell_nc — netcat bind shell
+- msfvenom_wrapper — wrapper око msfvenom (ако је инсталиран)
+- payload_encoder — енкодер за payload
+
+**Важна напомена:** Сви payload модули су само за овлашћено
+тестирање. Не смеју се користити против система без дозволе.
 
 ## Циљ
 
-Озбиљан Linux recon framework са ~50 модула у 9 подкатегорија.
-Након тога иду exploits (~15), post (~10), payloads (~5).
+Комплетан Linux framework са:
+- ~54 recon модула ✓
+- ~15 exploits модула
+- ~10 post модула
+- ~5 payloads модула
+
+Укупно око **84 модула** за Linux.
 
 ## Остали системи
 
@@ -203,81 +232,26 @@ Linux recon је организован по **подкатегоријама** 
 
 ## Структура Linux фолдера
 
-
 linux/
 ├── NOTES.md
 ├── init.py
 ├── recon/
 │ ├── init.py
-│ ├── system/
-│ │ ├── init.py
-│ │ ├── system_info.py
-│ │ ├── kernel_info.py
-│ │ ├── hardware_info.py
-│ │ ├── boot_info.py
-│ │ ├── environment.py
-│ │ └── time_info.py
-│ ├── users/
-│ │ ├── init.py
-│ │ ├── users_groups.py
-│ │ ├── ssh_keys.py
-│ │ ├── login_history.py
-│ │ ├── sudoers.py
-│ │ ├── password_policy.py
-│ │ └── pam_config.py
-│ ├── filesystem/
-│ │ ├── init.py
-│ │ ├── suid_sgid.py
-│ │ ├── capabilities.py
-│ │ ├── world_writable.py
-│ │ ├── hidden_files.py
-│ │ ├── recent_files.py
-│ │ └── suspicious_files.py
-│ ├── network/
-│ │ ├── init.py
-│ │ ├── network_info.py
-│ │ ├── open_ports.py
-│ │ ├── listening_services.py
-│ │ ├── firewall_rules.py
-│ │ ├── dns_config.py
-│ │ └── arp_table.py
-│ ├── services/
-│ │ ├── init.py
-│ │ ├── services.py
-│ │ ├── processes.py
-│ │ ├── cron_jobs.py
-│ │ ├── timers.py
-│ │ ├── startup_scripts.py
-│ │ └── sockets.py
-│ ├── software/
-│ │ ├── init.py
-│ │ ├── installed_packages.py
-│ │ ├── outdated_packages.py
-│ │ ├── docker.py
-│ │ ├── compilers.py
-│ │ ├── suid_interpreters.py
-│ │ └── language_packages.py
-│ ├── security/
-│ │ ├── init.py
-│ │ ├── selinux_apparmor.py
-│ │ ├── fail2ban.py
-│ │ ├── audit_rules.py
-│ │ ├── sshd_config.py
-│ │ ├── tls_certs.py
-│ │ └── security_modules.py
-│ ├── credentials/
-│ │ ├── init.py
-│ │ ├── ssh_private_keys.py
-│ │ ├── history_files.py
-│ │ ├── config_secrets.py
-│ │ ├── cloud_creds.py
-│ │ ├── browser_data.py
-│ │ └── git_credentials.py
-│ └── logs/
-│ └── init.py
+│ ├── system/ (6 модула)
+│ ├── users/ (6 модула)
+│ ├── filesystem/ (6 модула)
+│ ├── network/ (6 модула)
+│ ├── services/ (6 модула)
+│ ├── software/ (6 модула)
+│ ├── security/ (6 модула)
+│ ├── credentials/ (6 модула)
+│ └── logs/ (6 модула)
 ├── exploits/
+│ └── (планирано ~15 модула)
 ├── post/
+│ └── (планирано ~10 модула)
 └── payloads/
+└── (планирано ~5 модула)
 
 
 ## Тестни систем
@@ -296,5 +270,5 @@ linux/
 - auditd: није инсталиран
 - SELinux: није доступан
 - AppArmor: модул учитан, нема профила
-- MAC систем: делимично активан
+- Journal: persistent, 872.9M
 - CPU рањивости: све митиговане
