@@ -70,9 +70,14 @@ Linux recon је организован по **подкатегоријама** 
 - tls_certs — CA сертификати, приватни кључеви, истекли
 - security_modules — LSM модули, kernel hardening, CPU рањивости
 
-### recon / credentials — празно
+### recon / credentials — 6 модула — ЗАВРШЕНО ✓
 
-- (чека модуле)
+- ssh_private_keys — приватни SSH кључеви, шифрованост
+- history_files — историја команди, осетљиве команде
+- config_secrets — .env, AWS, Docker, git креденцијали
+- cloud_creds — AWS, GCP, Azure, Kubernetes креденцијали
+- browser_data — Firefox, Chrome, Brave профили и подаци
+- git_credentials — .gitconfig, .git-credentials, remote URL-ови
 
 ### recon / logs — празно
 
@@ -92,7 +97,7 @@ Linux recon је организован по **подкатегоријама** 
 
 ## Укупно
 
-- **42 модула** у recon
+- **48 модула** у recon
   - system: 6 ✓
   - users: 6 ✓
   - filesystem: 6 ✓
@@ -100,9 +105,10 @@ Linux recon је организован по **подкатегоријама** 
   - services: 6 ✓
   - software: 6 ✓
   - security: 6 ✓
+  - credentials: 6 ✓
 - **9 подкатегорија** у recon
 - **Завршене подкатегорије:** System, Users, Filesystem,
-  Network, Services, Software, Security
+  Network, Services, Software, Security, Credentials
 
 ## Инфраструктура (заједничка)
 
@@ -162,26 +168,26 @@ Linux recon је организован по **подкатегоријама** 
 - CPU има све познате рањивости митиговане или
   није погођен.
 - Систем има 4171 dpkg пакет, 268 доступних надоградњи.
+- Корисник има више GitHub налога:
+  `Boban-EthicalHacker`, `Bubislav92`, `bobanwebdevelopment92-collab`.
+- Модул `config_secrets` пронашао 98 .env фајлова
+  у Laravel пројектима (1496 тајни).
+- Browser профили: Firefox, Chrome (1676 колачића),
+  Brave. Укупнo 3 профила.
+- 9 приватних SSH кључева пронађено, 1 са слабим
+  permissions (`~/thm/id_rsa_1593558668558.id_rsa`).
+- Нема cloud креденцијала (AWS, GCP, Azure) на систему.
 
 ## Следеће на реду
 
-### Credentials подкатегорија
+### Logs подкатегорија (последња)
 
-- ssh_private_keys — приватни SSH кључеви
-- history_files — историја команди (bash, zsh)
-- config_secrets — тајне у конфиг фајловима
-- cloud_creds — AWS, GCP, Azure креденцијали
-- browser_data — подаци из browser-а
-- git_credentials — git credentials
-
-### Logs подкатегорија
-
-- auth_logs — /var/log/auth.log
-- system_logs — /var/log/syslog
-- journal — systemd journal
-- app_logs — логови апликација
-- kernel_logs — /var/log/kern.log
-- audit_logs — /var/log/audit/
+- auth_logs — /var/log/auth.log, неуспешне пријаве
+- system_logs — /var/log/syslog, /var/log/messages
+- journal — systemd journal (journalctl)
+- app_logs — логови апликација (nginx, apache, mysql)
+- kernel_logs — /var/log/kern.log, dmesg
+- audit_logs — /var/log/audit/, auditd записи
 
 ## Циљ
 
@@ -196,6 +202,7 @@ Linux recon је организован по **подкатегоријама** 
 - iOS — 12 модула у recon/static (завршено)
 
 ## Структура Linux фолдера
+
 
 linux/
 ├── NOTES.md
@@ -259,7 +266,13 @@ linux/
 │ │ ├── tls_certs.py
 │ │ └── security_modules.py
 │ ├── credentials/
-│ │ └── init.py
+│ │ ├── init.py
+│ │ ├── ssh_private_keys.py
+│ │ ├── history_files.py
+│ │ ├── config_secrets.py
+│ │ ├── cloud_creds.py
+│ │ ├── browser_data.py
+│ │ └── git_credentials.py
 │ └── logs/
 │ └── init.py
 ├── exploits/
