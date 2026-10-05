@@ -8,8 +8,9 @@ from moravasploit.core.menu import ask_select
 # Увозимо функције за управљање сесијом.
 from moravasploit.core.session import end_session, start_session
 
-# Увозимо подмени за recon категорију.
+# Увозимо подменије за категорије.
 from moravasploit.targets.linux.recon import menu as recon_menu
+from moravasploit.targets.linux.exploits import menu as exploits_menu
 
 # Глобални објекат конзоле за испис у терминалу.
 console = Console()
@@ -25,6 +26,7 @@ CATEGORIES = {
 # Речник који повезује категорију са њеном menu() функцијом.
 CATEGORY_MENUS = {
     "recon": recon_menu,
+    "exploits": exploits_menu,
 }
 
 
@@ -66,6 +68,4 @@ def menu() -> None:
                 )
     finally:
         # Кад корисник изађе из Linux менија, завршавамо сесију.
-        # finally блок се извршава и ако дође до грешке или
-        # ако корисник притисне Ctrl+C.
         end_session()
