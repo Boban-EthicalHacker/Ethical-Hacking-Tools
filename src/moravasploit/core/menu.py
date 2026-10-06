@@ -50,15 +50,11 @@ def ask_choice(options: list[str]) -> str | None:
 
 
 def ask_select(options: list[tuple[str, str]]) -> str | None:
-    """Пита корисника да изабере једну опцију.
+    """Пита корисника да изабере једну опцију (стрелице горе/доле).
 
-    Корисник може да бира:
-        - стрелицама горе/доле
-        - притиском на кратак тастер (ако опција има)
-
-    Кратки тастери:
-        b — back
-        e — exit
+    Корисник бира стрелицама горе/доле и потврђује са Enter.
+    На дну менија су ставке 'back' и 'exit' — до њих се долази
+    стрелицама, не тастерима.
 
     Аргументи:
         options: листа (кључ, опис) туплова.
@@ -70,35 +66,28 @@ def ask_select(options: list[tuple[str, str]]) -> str | None:
         ExitApp: ако је изабран 'exit'.
     """
     # Правимо листу избора за questionary.
+    # Не користимо use_shortcuts, тако да нема аутоматских
+    # бројева или слова поред ставки.
     choices: list = [
         questionary.Choice(title=label, value=key)
         for key, label in options
     ]
 
-    # Додајемо раздвајач, па 'back' и 'exit' са кратким тастерима.
+    # Додајемо раздвајач, па 'back' и 'exit'.
     choices.append(questionary.Separator())
-    choices.append(questionary.Choice(
-        title="back",
-        value="__back__",
-        shortcut_key="b",
-    ))
-    choices.append(questionary.Choice(
-        title="exit",
-        value="__exit__",
-        shortcut_key="e",
-    ))
+    choices.append(questionary.Choice(title="back", value="__back__"))
+    choices.append(questionary.Choice(title="exit", value="__exit__"))
 
     # Приказујемо мени.
-    # use_shortcuts=True омогућава да се притисне тастер
-    # уместо да се стрелицама дође до опције.
+    # use_shortcuts=False — без аутоматских скраћеница.
     answer = questionary.select(
         "",
         choices=choices,
         qmark="",
         style=MENU_STYLE,
         pointer="❯",
-        instruction="",
-        use_shortcuts=True,
+        instruction="(Use arrow keys and Enter)",
+        use_shortcuts=False,
     ).ask()
 
     # Ако је корисник притиснуо Ctrl+C или Ctrl+D.
@@ -111,54 +100,4 @@ def ask_select(options: list[tuple[str, str]]) -> str | None:
     if answer == "__back__":
         return None
 
-    return answer
-    """Пита корисника да изабере једну опцију (стрелице горе/доле).
-
-    Аргументи:
-        options: листа (кључ, опис) туплова.
-                 Кључ се враћа, опис се приказује.
-
-    Враћа:
-        Изабрани кључ, или None ако је изабран 'back'.
-
-    Подиже:
-        ExitApp: ако је изабран 'exit'.
-    """
-    # Правимо листу избора за questionary.
-    choices: list = [
-        questionary.Choice(title=label, value=key)
-        for key, label in options
-    ]
-
-    # Додајемо раздвајач, па 'back' и 'exit'.
-    choices.append(questionary.Separator())
-    choices.append(questionary.Choice(title="back", value="__back__"))
-    choices.append(questionary.Choice(title="exit", value="__exit__"))
-
-    # Приказујемо мени.
-    # questionary захтева непразан "message", али га можемо
-    # сакрити празним qmark-ом и празном инструкцијом.
-    answer = questionary.select(
-        "",
-        choices=choices,
-        qmark="",
-        style=MENU_STYLE,
-        pointer="❯",
-        instruction="",
-    ).ask()
-
-    # Ако је корисник притиснуо Ctrl+C или Ctrl+D,
-    # questionary враћа None.
-    if answer is None:
-        return None
-
-    # Ако је изабран 'exit', подижемо изузетак.
-    if answer == "__exit__":
-        raise ExitApp()
-
-    # Ако је изабран 'back', враћамо None.
-    if answer == "__back__":
-        return None
-
-    # Иначе враћамо изабрани кључ.
     return answer

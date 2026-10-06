@@ -161,27 +161,46 @@ Linux recon је организован по **подкатегоријама** 
 
 Linux recon је завршен. Следеће фазе пројекта:
 
-### exploits (~15 модула)
+## exploits — 15 модула — ЗАВРШЕНО ✓
 
-Провере за познате CVE-ове и privilege escalation векторе.
-Свака провера је само детекција, без експлоатације.
+Сви модули у овој категорији су за **ДЕТЕКЦИЈУ**.
+Само проверавају да ли верзија/конфигурација одговара познатој
+рањивости. Не покушавају експлоатацију.
 
-Планирани модули:
-- kernel_cve_check — провера верзије кернела против CVE базе
-- dirty_pipe — провера за CVE-2022-0847
-- pwnkit — провера за CVE-2021-4034 (pkexec)
-- sudo_baron_samedit — провера за CVE-2021-3156
-- sudo_baron_samedit_v2 — провера за CVE-2021-23239
-- polkit_cve — провера за CVE-2021-3560
-- overlayfs_cve — провера за CVE-2021-3493
-- netfilter_cve — провера за CVE-2021-22555, CVE-2022-25636
-- glibc_ghost — провера за CVE-2015-0235
-- io_uring_cve — провера за CVE-2022-29582
-- nf_tables_cve — провера за CVE-2023-32233
-- sudo_rsync — провера GTFOBins за sudo
-- kernel_version_check — упоређивање са познатим рањивим
-- package_cve_check — провера пакета против CVE базе
-- suid_exploit_check — провера SUID фајлова против GTFOBins
+### exploits / kernel — 2 модула — ЗАВРШЕНО ✓
+
+- kernel_version_check — упоређивање верзије кернела са познатим рањивим
+- kernel_hardening_check — kernel hardening опције (KASLR, SMEP, SMAP, ...)
+
+### exploits / cve — 7 модула — ЗАВРШЕНО ✓
+
+- pwnkit — PwnKit (CVE-2021-4034, pkexec)
+- dirty_pipe — Dirty Pipe (CVE-2022-0847)
+- sudo_baron_samedit — Baron Samedit (CVE-2021-3156)
+- sudo_all_bypass — sudo Runas ALL bypass (CVE-2019-14287)
+- polkit_cve — polkit privilege escalation (CVE-2021-3560)
+- glibc_ghost — glibc GHOST (CVE-2015-0235)
+- netfilter_cve — Netfilter (CVE-2021-22555, CVE-2022-25636, CVE-2022-1015)
+
+### exploits / privilege — 4 модула — ЗАВРШЕНО ✓
+
+- suid_exploit_check — SUID фајлови против GTFOBins листе
+- capabilities_exploit — злоупотребљиве Linux capabilities
+- sudo_gtfobins — sudo дозволе против GTFOBins листе
+- package_cve_check — инсталирани пакети против CVE базе
+
+### exploits / container — 2 модула — ЗАВРШЕНО ✓
+
+- lxd_check — LXD/LXC привилегије (ескалација кроз групу)
+- container_escape_check — услови за излаз из контејнера
+
+- **15 модула** у exploits
+  - kernel: 2 ✓
+  - cve: 7 ✓
+  - privilege: 4 ✓
+  - container: 2 ✓
+- **4 подкатегорије** у exploits
+- **Linux exploits је COMPLETE** ✓
 
 ### post (~10 модула)
 
@@ -234,25 +253,25 @@ Linux recon је завршен. Следеће фазе пројекта:
 
 linux/
 ├── NOTES.md
-├── init.py
+├── __init__.py
 ├── recon/
-│ ├── init.py
-│ ├── system/ (6 модула)
-│ ├── users/ (6 модула)
-│ ├── filesystem/ (6 модула)
-│ ├── network/ (6 модула)
-│ ├── services/ (6 модула)
-│ ├── software/ (6 модула)
-│ ├── security/ (6 модула)
-│ ├── credentials/ (6 модула)
-│ └── logs/ (6 модула)
+│   ├── __init__.py
+│   ├── system/       (6 модула) ✓
+│   ├── users/        (6 модула) ✓
+│   ├── filesystem/   (6 модула) ✓
+│   ├── network/      (6 модула) ✓
+│   ├── services/     (6 модула) ✓
+│   ├── software/     (6 модула) ✓
+│   ├── security/     (6 модула) ✓
+│   ├── credentials/  (6 модула) ✓
+│   └── logs/         (6 модула) ✓
 ├── exploits/
-│ └── (планирано ~15 модула)
+│   ├── __init__.py
+│   └── (15 модула) ✓
 ├── post/
-│ └── (планирано ~10 модула)
+│   └── (планирано ~10 модула)
 └── payloads/
-└── (планирано ~5 модула)
-
+    └── (планирано ~5 модула)
 
 ## Тестни систем
 
